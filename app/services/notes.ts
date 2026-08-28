@@ -1,11 +1,13 @@
 import { db } from "@/db";
 import { notes } from "@/db/schema";
-import { eq, sql } from "drizzle-orm";
+import { eq, ilike, sql } from "drizzle-orm";
 
 
 
-export const getNotes = async () => {
-  return db.query.notes.findMany();
+export const getNotes = async (filter?: string) => {
+  return db.query.notes.findMany({
+    where: filter ? ilike(notes.title, `%${filter}%`) : undefined,
+  });
 }
 
 export const getNoteById = async (id: number) => {
