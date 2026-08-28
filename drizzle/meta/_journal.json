@@ -8,6 +8,20 @@
       "when": 1787923986255,
       "tag": "0000_known_the_professor",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1787932058069,
+      "tag": "0001_cloudy_roulette",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1787932356236,
+      "tag": "0002_silky_zuras",
+      "breakpoints": true
     }
   ]
 }
