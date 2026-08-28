@@ -1,6 +1,6 @@
 import { db } from "@/db";
 import { notes } from "@/db/schema";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 
 
 
@@ -20,11 +20,5 @@ export const addNote = async (title: string, author: string, url: string) => {
 
 
 export const persistLikes = async (id: number) => {
-  const note = await db.query.notes.findFirst({
-    where: eq(notes.id, id),
-  });
-
-  if (note) {
-    await db.update(notes).set({likes: note.likes + 1}).where(eq(notes.id, id));
-  }
+  await db.update(notes).set({ likes: sql`${notes.likes} + 1` }).where(eq(notes.id, id));
 }
