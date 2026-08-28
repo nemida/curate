@@ -9,7 +9,7 @@ type NotesPageProps = {
 const Notes = async ( {searchParams} : NotesPageProps ) => {
 
   const { filter } = await searchParams;
-  const rawNotes = getNotes();
+  const rawNotes = await getNotes();
   const sortedNotes = [...rawNotes].sort((a, b) => b.likes - a.likes)
 
   const displayNotes = filter ? sortedNotes.filter((note) => note.title.toLowerCase().includes(filter.toLowerCase())) : sortedNotes;

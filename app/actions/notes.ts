@@ -9,7 +9,7 @@ export const createNote = async (formData: FormData) => {
   const author = formData.get("author") as string;
   const url = formData.get("url") as string;
 
-  addNote(title, author, url);
+  await addNote(title, author, url);
   revalidatePath("/notes");
   redirect("/notes");
 } 
@@ -17,7 +17,7 @@ export const createNote = async (formData: FormData) => {
 export const increaseLikes = async (formData: FormData) => {
   const rawId = formData.get("id");
   const id = Number(rawId);
-  persistLikes(id);
+  await persistLikes(id);
   revalidatePath(`/notes/${id}`);
 
 }
