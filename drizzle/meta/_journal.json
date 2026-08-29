@@ -22,6 +22,13 @@
       "when": 1787932356236,
       "tag": "0002_silky_zuras",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1787946086350,
+      "tag": "0003_familiar_malcolm_colcord",
+      "breakpoints": true
     }
   ]
 }

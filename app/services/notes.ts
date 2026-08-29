@@ -1,6 +1,7 @@
 import { db } from "@/db";
 import { notes } from "@/db/schema";
 import { eq, ilike, sql } from "drizzle-orm";
+import { getCurrentUser } from "./session";
 
 export const getNotes = async (filter?: string) => {
   return db.query.notes.findMany({
@@ -15,11 +16,9 @@ export const getNoteById = async (id: number) => {
 }
 
 export const addNote = async (title: string, author: string, url: string) => {
-  const user = await db.query.users.findFirst({
-    orderBy: sql`RANDOM()`,
-  })
+  const user = await getCurrentUser()
 
-  if (!user) throw new Error("No users found");
+  if (!user) throw new Error("Not logged in");
 
   await db.insert(notes).values({ title, author, url, likes: 0, userId: user.id });
 }
