@@ -13,7 +13,10 @@ export default function NavBar() {
     <nav className="border-b bg-card px-6 py-3 flex items-center justify-between">
       <div className="flex items-center gap-6">
         <Link href="/" className="text-lg font-semibold">
-          blogapp
+          
+        </Link>
+        <Link href="/" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+          Home
         </Link>
         <Link href="/blogs" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
           Blogs

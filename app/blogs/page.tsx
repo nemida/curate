@@ -16,7 +16,7 @@ const Blogs = async ({ searchParams }: BlogsPageProps) => {
   const sortedBlogs = [...rawBlogs].sort((a, b) => b.likes - a.likes);
 
   return (
-    <div>
+    <div className="max-w-2xl mx-auto">
       <h2 className="text-2xl font-bold mb-6">Blogs</h2>
 
       <form action="/blogs" method="GET" className="flex gap-2 mb-8">

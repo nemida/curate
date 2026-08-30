@@ -23,7 +23,7 @@ const BlogPage = async ({ params }: { params: Promise<{ id: string }> }) => {
     : false;
 
   return (
-    <div className="max-w-xl">
+    <div className="max-w-xl mx-auto">
       <Card>
         <CardHeader>
           <CardTitle className="text-2xl">{blog.title}</CardTitle>

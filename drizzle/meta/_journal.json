@@ -64,6 +64,13 @@
       "when": 1756598080000,
       "tag": "0008_rename_notes_to_blogs",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1788128087166,
+      "tag": "0009_common_spectrum",
+      "breakpoints": true
     }
   ]
 }
