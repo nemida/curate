@@ -1,39 +1,47 @@
 import { notFound } from "next/navigation";
 import { getNoteById } from "../../services/notes";
 import { increaseLikes } from "@/app/actions/notes";
-
+import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
 
 const NotePage = async ({ params }: { params: Promise<{ id: string }> }) => {
   const { id } = await params;
   const note = await getNoteById(Number(id));
 
-  if (!note) {
-    notFound();
-  }
+  if (!note) notFound();
+
+  const url = note.url.startsWith("http") ? note.url : `https://${note.url}`;
 
   return (
-    <div>
-      <article
-        style={{
-          border: "1px solid #ccc",
-          padding: "1rem",
-          marginBottom: "1rem",
-        }}
-      >
-        <h3>{note.title}</h3>
-
-        <p>
-          Author: {note.author}
-          <br />
-          {note.url && <a href={note.url}>Read more</a>}
-        </p>
-        <form action={increaseLikes}>
-          <input type="hidden" name="id" value={note.id} />
-          <button type="submit">
-            Likes: {note.likes}
-          </button>
-        </form>
-      </article>
+    <div className="max-w-xl">
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-2xl">{note.title}</CardTitle>
+          <CardDescription>by {note.author}</CardDescription>
+        </CardHeader>
+        {note.url && (
+          <CardContent>
+            <a href={url} className="text-sm text-primary hover:underline break-all" target="_blank" rel="noreferrer">
+              {note.url}
+            </a>
+          </CardContent>
+        )}
+        <CardFooter className="gap-3">
+          <form action={increaseLikes}>
+            <input type="hidden" name="id" value={note.id} />
+            <Button type="submit" variant="outline" size="sm">
+              ♥ {note.likes} likes
+            </Button>
+          </form>
+          {note.url && (
+            <a href={url} target="_blank" rel="noreferrer" className={cn(buttonVariants({ size: "sm" }))}>
+              Visit source
+            </a>
+          )}
+        </CardFooter>
+      </Card>
     </div>
   );
 };
