@@ -12,3 +12,28 @@ export const getUserByUsername = async (username: string) => {
     with: { notes: true },
   });
 };
+
+export const getUserInfoByToken = async (token: string) => {
+  const user = await db.query.users.findFirst({
+    where: eq(users.token, token),
+    columns: { id: true, username: true, name: true },
+    with: {
+      notes: {
+        columns: {
+          author: true,
+          title: true,
+          url: true,
+        },
+      },
+    },
+  });
+
+  if (!user) return null;
+
+  return {
+    id: user.id,
+    username: user.username,
+    name: user.name,
+    createdBlogs: user.notes,
+  };
+};

@@ -29,6 +29,20 @@
       "when": 1787946086350,
       "tag": "0003_familiar_malcolm_colcord",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1788113050412,
+      "tag": "0004_early_agent_zero",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1788120139935,
+      "tag": "0005_known_madame_masque",
+      "breakpoints": true
     }
   ]
 }

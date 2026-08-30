@@ -26,7 +26,9 @@ export default function NavBar() {
       <div className="flex items-center gap-3">
         {session ? (
           <>
-            <span className="text-sm text-muted-foreground">{session.user?.name}</span>
+            <Link href="/me" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+              {session.user?.name}
+            </Link>
             <Link href="/notes/new" className={cn(buttonVariants({ size: "sm" }))}>
               + New
             </Link>

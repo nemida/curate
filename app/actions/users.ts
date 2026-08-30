@@ -4,7 +4,10 @@ import { db } from "@/db";
 import { users } from "@/db/schema";
 import bcrypt from "bcryptjs";
 import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
 import { getUserByUsername } from "../services/users";
+import { auth } from "@/auth";
+import { eq } from "drizzle-orm";
 
 export const registerUser = async (
   prevState: {
@@ -48,4 +51,13 @@ export const registerUser = async (
   await db.insert(users).values({ username, name, passwordHash });
 
   redirect("/login");
+};
+
+export const generateAPIToken = async () => {
+  const session = await auth();
+  if (!session?.user?.email) redirect("/login");
+
+  const token = crypto.randomUUID();
+  await db.update(users).set({ token }).where(eq(users.username, session.user.email));
+  revalidatePath("/me");
 };
