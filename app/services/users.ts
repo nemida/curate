@@ -9,7 +9,7 @@ export const getUsers = async () => {
 export const getUserByUsername = async (username: string) => {
   return db.query.users.findFirst({
     where: eq(users.username, username),
-    with: { notes: true },
+    with: { blogs: true },
   });
 };
 
@@ -18,7 +18,7 @@ export const getUserInfoByToken = async (token: string) => {
     where: eq(users.token, token),
     columns: { id: true, username: true, name: true },
     with: {
-      notes: {
+      blogs: {
         columns: {
           author: true,
           title: true,
@@ -34,6 +34,6 @@ export const getUserInfoByToken = async (token: string) => {
     id: user.id,
     username: user.username,
     name: user.name,
-    createdBlogs: user.notes,
+    createdBlogs: user.blogs,
   };
 };

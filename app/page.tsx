@@ -11,7 +11,7 @@ const Home = () => {
       </div>
 
       <h1 className="text-5xl font-bold leading-tight max-w-lg">
-        A place for notes that matter
+        A place for blogs that matter
       </h1>
 
       <p className="text-muted-foreground text-lg max-w-md">
@@ -22,8 +22,8 @@ const Home = () => {
         <Link href="/register" className={cn(buttonVariants({ size: "lg" }))}>
           Get started
         </Link>
-        <Link href="/notes" className={cn(buttonVariants({ variant: "outline", size: "lg" }))}>
-          Browse notes
+        <Link href="/blogs" className={cn(buttonVariants({ variant: "outline", size: "lg" }))}>
+          Browse blogs
         </Link>
       </div>
 
@@ -41,7 +41,7 @@ const Home = () => {
             <CardTitle>Like what you love</CardTitle>
           </CardHeader>
           <CardContent className="text-sm text-muted-foreground">
-            The best notes rise to the top. Discover what others find valuable.
+            The best blogs rise to the top. Discover what others find valuable.
           </CardContent>
         </Card>
         <Card>
@@ -49,7 +49,7 @@ const Home = () => {
             <CardTitle>Find fast</CardTitle>
           </CardHeader>
           <CardContent className="text-sm text-muted-foreground">
-            Search across all notes instantly to find exactly what you need.
+            Search across all blogs instantly to find exactly what you need.
           </CardContent>
         </Card>
       </div>

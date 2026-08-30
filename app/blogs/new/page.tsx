@@ -1,5 +1,5 @@
 "use client";
-import { createNote } from "@/app/actions/notes";
+import { createBlog } from "@/app/actions/blogs";
 import { useNotification } from "@/app/components/NotificationContext";
 import { useRouter } from "next/navigation";
 import { useActionState, useEffect } from "react";
@@ -7,8 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
-const NewNote = () => {
-  const [state, formAction] = useActionState(createNote, {
+const NewBlog = () => {
+  const [state, formAction] = useActionState(createBlog, {
     error: "",
     values: { title: "", author: "", url: "" },
     success: false,
@@ -19,17 +19,17 @@ const NewNote = () => {
 
   useEffect(() => {
     if (state.success) {
-      showNotification("Note created.");
-      router.push("/notes");
+      showNotification("Blog created.");
+      router.push("/blogs");
     }
   }, [state, showNotification, router]);
 
   return (
     <div className="max-w-lg">
-      <h2 className="text-2xl font-bold mb-6">New note</h2>
+      <h2 className="text-2xl font-bold mb-6">New blog</h2>
       <Card>
         <CardHeader>
-          <CardTitle>Note details</CardTitle>
+          <CardTitle>Blog details</CardTitle>
         </CardHeader>
         <CardContent>
           <form action={formAction} className="flex flex-col gap-4">
@@ -54,4 +54,4 @@ const NewNote = () => {
   );
 };
 
-export default NewNote;
+export default NewBlog;

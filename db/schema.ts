@@ -1,7 +1,7 @@
 import { relations } from "drizzle-orm";
 import { boolean, integer, pgTable, serial, text } from "drizzle-orm/pg-core";
 
-export const notes = pgTable("notes", {
+export const blogs = pgTable("blogs", {
   id: serial("id").primaryKey(),
   title: text("title").notNull(),
   author: text("author").notNull(),
@@ -21,18 +21,18 @@ export const users = pgTable("users", {
 export const readingList = pgTable("reading_list", {
   id: serial("id").primaryKey(),
   userId: integer("user_id").notNull().references(() => users.id),
-  blogId: integer("blog_id").notNull().references(() => notes.id),
+  blogId: integer("blog_id").notNull().references(() => blogs.id),
   read: boolean("read").notNull().default(false),
 })
 
 export const usersRelations = relations(users, ({ many }) => ({
-  notes: many(notes),
+  blogs: many(blogs),
   readingList: many(readingList),
 }))
 
-export const notesRelations = relations(notes, ({ one, many }) => ({
+export const blogsRelations = relations(blogs, ({ one, many }) => ({
   user: one(users, {
-    fields: [notes.userId],
+    fields: [blogs.userId],
     references: [users.id],
   }),
   readingList: many(readingList),
@@ -43,9 +43,8 @@ export const readingListRelations = relations(readingList, ({ one }) => ({
     fields: [readingList.userId],
     references: [users.id],
   }),
-  blog: one(notes, {
+  blog: one(blogs, {
     fields: [readingList.blogId],
-    references: [notes.id],
+    references: [blogs.id],
   }),
 }))
-

@@ -24,29 +24,29 @@ const UserPage = async ({ params }: { params: Promise<{ username: string }> }) =
         </div>
       </div>
 
-      <h3 className="text-lg font-semibold mb-4">Notes</h3>
+      <h3 className="text-lg font-semibold mb-4">Blogs</h3>
 
-      {user.notes.length === 0 && (
-        <p className="text-muted-foreground text-sm">No notes yet.</p>
+      {user.blogs.length === 0 && (
+        <p className="text-muted-foreground text-sm">No blogs yet.</p>
       )}
 
       <ul className="flex flex-col gap-3">
-        {user.notes.map((note) => (
-          <li key={note.id}>
+        {user.blogs.map((blog) => (
+          <li key={blog.id}>
             <Card>
               <CardHeader>
                 <div className="flex items-start justify-between">
-                  <CardTitle>{note.title}</CardTitle>
-                  <Badge variant="secondary">♥ {note.likes}</Badge>
+                  <CardTitle>{blog.title}</CardTitle>
+                  <Badge variant="secondary">♥ {blog.likes}</Badge>
                 </div>
               </CardHeader>
               <CardFooter className="gap-3">
-                <Link href={`/notes/${note.id}`} className={cn(buttonVariants({ size: "sm" }))}>
+                <Link href={`/blogs/${blog.id}`} className={cn(buttonVariants({ size: "sm" }))}>
                   View →
                 </Link>
-                {note.url && (
+                {blog.url && (
                   <a
-                    href={note.url.startsWith("http") ? note.url : `https://${note.url}`}
+                    href={blog.url.startsWith("http") ? blog.url : `https://${blog.url}`}
                     target="_blank"
                     rel="noreferrer"
                     className={cn(buttonVariants({ variant: "outline", size: "sm" }))}

@@ -68,7 +68,7 @@ const Profile = async () => {
                         {entry.read ? "Read" : "Unread"}
                       </Badge>
                       <Link
-                        href={`/notes/${entry.blogId}`}
+                        href={`/blogs/${entry.blogId}`}
                         className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
                       >
                         View →

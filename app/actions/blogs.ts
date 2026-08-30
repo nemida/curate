@@ -2,11 +2,11 @@
 
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
-import { addNote, persistLikes } from "../services/notes";
+import { addBlog, persistLikes } from "../services/blogs";
 import { addToReadingList } from "../services/readingList";
 import { auth } from "@/auth";
 
-export const createNote = async (
+export const createBlog = async (
   prevState: {
     error: string;
     values?: {
@@ -41,9 +41,9 @@ export const createNote = async (
     };
   }
 
-  const result = await addNote(title, author, url);
-  await addToReadingList(result.userId, result.noteId);
-  revalidatePath("/notes");
+  const result = await addBlog(title, author, url);
+  await addToReadingList(result.userId, result.blogId);
+  revalidatePath("/blogs");
   return { error: "", success: true };
 };
 
@@ -56,5 +56,5 @@ export const increaseLikes = async (formData: FormData) => {
   const rawId = formData.get("id");
   const id = Number(rawId);
   await persistLikes(id);
-  revalidatePath(`/notes/${id}`);
+  revalidatePath(`/blogs/${id}`);
 };

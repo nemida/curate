@@ -15,8 +15,8 @@ export default function NavBar() {
         <Link href="/" className="text-lg font-semibold">
           blogapp
         </Link>
-        <Link href="/notes" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-          Notes
+        <Link href="/blogs" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+          Blogs
         </Link>
         <Link href="/users" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
           Users
@@ -29,7 +29,7 @@ export default function NavBar() {
             <Link href="/me" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
               {session.user?.name}
             </Link>
-            <Link href="/notes/new" className={cn(buttonVariants({ size: "sm" }))}>
+            <Link href="/blogs/new" className={cn(buttonVariants({ size: "sm" }))}>
               + New
             </Link>
             <Button variant="ghost" size="sm" onClick={() => signOut()}>
