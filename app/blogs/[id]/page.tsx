@@ -23,11 +23,11 @@ const BlogPage = async ({ params }: { params: Promise<{ id: string }> }) => {
     : false;
 
   return (
-    <div className="max-w-xl mx-auto">
+    <div data-testid="blog-detail" className="max-w-xl mx-auto">
       <Card>
         <CardHeader>
-          <CardTitle className="text-2xl">{blog.title}</CardTitle>
-          <CardDescription>by {blog.author}</CardDescription>
+          <CardTitle data-testid="blog-title" className="text-2xl">{blog.title}</CardTitle>
+          <CardDescription data-testid="blog-author">by {blog.author}</CardDescription>
         </CardHeader>
         {blog.url && (
           <CardContent>
@@ -51,7 +51,7 @@ const BlogPage = async ({ params }: { params: Promise<{ id: string }> }) => {
           {currentUser && !isOwner && (
             <form action={addToReadingListAction}>
               <input type="hidden" name="blogId" value={blog.id} />
-              <Button type="submit" variant="outline" size="sm" disabled={alreadyInList}>
+              <Button data-testid="add-to-reading-list-button" type="submit" variant="outline" size="sm" disabled={alreadyInList}>
                 {alreadyInList ? "✓ In reading list" : "+ Add to reading list"}
               </Button>
             </form>

@@ -3,6 +3,7 @@
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { useNotification } from "@/app/components/NotificationContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,8 +11,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 export default function LoginPage() {
   const router = useRouter();
   const [error, setError] = useState("");
+  const { showNotification } = useNotification();
 
-  const handleSubmit = async (e: React.SubmitEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
 
@@ -24,6 +26,7 @@ export default function LoginPage() {
     if (result?.error) {
       setError("Invalid username or password");
     } else {
+      showNotification("Successfully logged in.");
       router.push("/");
       router.refresh();
     }
@@ -39,15 +42,15 @@ export default function LoginPage() {
         <CardContent>
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             <div className="flex flex-col gap-1.5">
-              <label className="text-sm font-medium">Username</label>
-              <Input type="text" name="username" required />
+              <label htmlFor="username" className="text-sm font-medium">Username</label>
+              <Input type="text" id="username" name="username" required />
             </div>
             <div className="flex flex-col gap-1.5">
-              <label className="text-sm font-medium">Password</label>
-              <Input type="password" name="password" required />
+              <label htmlFor="password" className="text-sm font-medium">Password</label>
+              <Input type="password" id="password" name="password" required />
             </div>
-            {error && <p className="text-destructive text-sm">{error}</p>}
-            <Button type="submit">Login</Button>
+            {error && <p data-testid="error-message" className="text-destructive text-sm">{error}</p>}
+            <Button data-testid="login-button" type="submit">Login</Button>
           </form>
         </CardContent>
       </Card>

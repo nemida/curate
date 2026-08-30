@@ -34,19 +34,19 @@ const NewBlog = () => {
         <CardContent>
           <form action={formAction} className="flex flex-col gap-4">
             <div className="flex flex-col gap-1.5">
-              <label className="text-sm font-medium">Title</label>
-              <Input type="text" name="title" required minLength={5} defaultValue={state.values?.title} />
+              <label htmlFor="title" className="text-sm font-medium">Title</label>
+              <Input type="text" id="title" name="title" required minLength={5} defaultValue={state.values?.title} />
             </div>
             <div className="flex flex-col gap-1.5">
-              <label className="text-sm font-medium">Author</label>
-              <Input type="text" name="author" required minLength={5} defaultValue={state.values?.author} />
+              <label htmlFor="author" className="text-sm font-medium">Author</label>
+              <Input type="text" id="author" name="author" required minLength={5} defaultValue={state.values?.author} />
             </div>
             <div className="flex flex-col gap-1.5">
-              <label className="text-sm font-medium">URL</label>
-              <Input type="text" name="url" required minLength={5} defaultValue={state.values?.url} />
+              <label htmlFor="url" className="text-sm font-medium">URL</label>
+              <Input type="text" id="url" name="url" required minLength={5} defaultValue={state.values?.url} />
             </div>
             {state.error && <p className="text-destructive text-sm">{state.error}</p>}
-            <Button type="submit" className="self-start">Create</Button>
+            <Button data-testid="create-blog-button" type="submit" className="self-start">Create</Button>
           </form>
         </CardContent>
       </Card>

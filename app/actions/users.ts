@@ -12,6 +12,7 @@ import { eq } from "drizzle-orm";
 export const registerUser = async (
   prevState: {
     error: string;
+    errorType?: string;
     values?: { username?: string; name?: string };
   },
   formData: FormData,
@@ -26,16 +27,19 @@ export const registerUser = async (
   if (!username || username.length < 4)
     return {
       error: "Username is too short",
+      errorType: "username-error",
       values: safeValues,
     };
   if (!password || password.length < 4)
     return {
       error: "Password is too short",
+      errorType: "password-error",
       values: safeValues,
     };
   if (!confirmpass || confirmpass !== password)
     return {
       error: "Passwords do not match",
+      errorType: "passwordConfirm-error",
       values: safeValues,
     };
 
@@ -43,6 +47,7 @@ export const registerUser = async (
   if (existingUser)
     return {
       error: "Username already exists",
+      errorType: "username-error",
       values: safeValues,
     };
 
@@ -60,4 +65,5 @@ export const generateAPIToken = async () => {
   const token = crypto.randomUUID();
   await db.update(users).set({ token }).where(eq(users.username, session.user.email));
   revalidatePath("/me");
+  return token;
 };

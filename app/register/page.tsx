@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 export default function RegisterPage() {
   const [state, formAction] = useActionState(registerUser, {
     error: "",
+    errorType: "",
     values: { username: "", name: "" },
   });
 
@@ -21,23 +22,23 @@ export default function RegisterPage() {
         <CardContent>
           <form action={formAction} className="flex flex-col gap-4">
             <div className="flex flex-col gap-1.5">
-              <label className="text-sm font-medium">Username</label>
-              <Input type="text" name="username" required defaultValue={state.values?.username} />
+              <label htmlFor="username" className="text-sm font-medium">Username</label>
+              <Input type="text" id="username" name="username" required defaultValue={state.values?.username} />
             </div>
             <div className="flex flex-col gap-1.5">
-              <label className="text-sm font-medium">Name</label>
-              <Input type="text" name="name" required defaultValue={state.values?.name} />
+              <label htmlFor="name" className="text-sm font-medium">Name</label>
+              <Input type="text" id="name" name="name" required defaultValue={state.values?.name} />
             </div>
             <div className="flex flex-col gap-1.5">
-              <label className="text-sm font-medium">Password</label>
-              <Input type="password" name="password" required />
+              <label htmlFor="password" className="text-sm font-medium">Password</label>
+              <Input type="password" id="password" name="password" required />
             </div>
             <div className="flex flex-col gap-1.5">
-              <label className="text-sm font-medium">Confirm Password</label>
-              <Input type="password" name="confirmpass" required />
+              <label htmlFor="confirmpass" className="text-sm font-medium">Confirm Password</label>
+              <Input type="password" id="confirmpass" name="confirmpass" required />
             </div>
-            {state.error && <p className="text-destructive text-sm">{state.error}</p>}
-            <Button type="submit">Register</Button>
+            {state.error && <p data-testid={state.errorType || "error-message"} className="text-destructive text-sm">{state.error}</p>}
+            <Button data-testid="register-button" type="submit">Register</Button>
           </form>
         </CardContent>
       </Card>

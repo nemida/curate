@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { getCurrentUser } from "../services/session";
 import { getReadingListForUser } from "../services/readingList";
 import { generateAPIToken } from "../actions/users";
+import TokenSectionClient from "./TokenSectionClient";
 import { markAsReadAction } from "../actions/readingList";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -19,47 +20,35 @@ const Profile = async () => {
 
   return (
     <div className="flex flex-col gap-8 max-w-2xl">
-      <Card className="w-full">
+      <Card data-testid="user-profile" className="w-full">
         <CardHeader>
           <CardTitle>My Profile</CardTitle>
         </CardHeader>
         <CardContent className="flex flex-col gap-6">
           <div className="flex flex-col gap-1">
-            <p className="text-sm"><span className="font-medium">Name:</span> {user.name}</p>
-            <p className="text-sm"><span className="font-medium">Username:</span> {user.username}</p>
+            <p data-testid="user-name" className="text-sm"><span className="font-medium">Name:</span> {user.name}</p>
+            <p data-testid="user-username" className="text-sm"><span className="font-medium">Username:</span> {user.username}</p>
           </div>
 
-          <div className="border-t pt-4 flex flex-col gap-3">
-            <p className="text-sm font-medium">API Token</p>
-            {user.token ? (
-              <p className="text-sm font-mono bg-muted px-3 py-2 rounded-md break-all">{user.token}</p>
-            ) : (
-              <p className="text-sm text-muted-foreground">No token generated yet.</p>
-            )}
-            <form action={generateAPIToken}>
-              <Button type="submit" variant="outline" size="sm">
-                {user.token ? "Regenerate token" : "Generate token"}
-              </Button>
-            </form>
-          </div>
+          <TokenSectionClient initialToken={user.token} />
         </CardContent>
       </Card>
 
-      <div className="flex flex-col gap-6">
+      <div data-testid="reading-list-section" className="flex flex-col gap-6">
         <h2 className="text-xl font-bold">My Reading List</h2>
 
         {readingList.length === 0 ? (
-          <p className="text-sm text-muted-foreground">
+          <p data-testid="empty-reading-list" className="text-sm text-muted-foreground">
             Your reading list is empty. Add blogs from their detail pages.
           </p>
         ) : (
           <>
-            <div className="flex flex-col gap-3">
+            <div data-testid="unread-section" className="flex flex-col gap-3">
               <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
                 Unread ({unread.length})
               </h3>
               {unread.length === 0 ? (
-                <p className="text-sm text-muted-foreground">You&apos;re all caught up!</p>
+                <p data-testid="no-unread-blogs" className="text-sm text-muted-foreground">You&apos;re all caught up!</p>
               ) : (
                 <ul className="flex flex-col gap-2">
                   {unread.map((entry) => (
@@ -76,7 +65,7 @@ const Profile = async () => {
                             </Link>
                             <form action={markAsReadAction}>
                               <input type="hidden" name="entryId" value={entry.id} />
-                              <Button type="submit" size="sm">Mark as read</Button>
+                              <Button data-testid={`mark-read-${entry.id}`} type="submit" size="sm">Mark as read</Button>
                             </form>
                           </div>
                         </CardContent>

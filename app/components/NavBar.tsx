@@ -19,10 +19,10 @@ export default function NavBar() {
           Home
         </Link>
         <Link href="/blogs" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-          Blogs
+          blogs
         </Link>
         <Link href="/users" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-          Users
+          users
         </Link>
       </div>
 
@@ -30,22 +30,22 @@ export default function NavBar() {
         {session ? (
           <>
             <Link href="/me" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-              {session.user?.name}
+              me
             </Link>
             <Link href="/blogs/new" className={cn(buttonVariants({ size: "sm" }))}>
               + New
             </Link>
             <Button variant="ghost" size="sm" onClick={() => signOut()}>
-              Logout
+              logout
             </Button>
           </>
         ) : (
           <>
             <Link href="/login" className={cn(buttonVariants({ variant: "ghost", size: "sm" }))}>
-              Login
+              login
             </Link>
             <Link href="/register" className={cn(buttonVariants({ size: "sm" }))}>
-              Register
+              register
             </Link>
           </>
         )}
