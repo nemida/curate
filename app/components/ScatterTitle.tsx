@@ -24,7 +24,7 @@ export default function ScatterTitle() {
             className={`
               inline-block transition-all duration-1000 ease-[cubic-bezier(0.16,1,0.3,1)]
               group-hover:duration-300 group-hover:ease-out
-              bg-gradient-to-b from-foreground via-foreground/90 to-muted-foreground/40 bg-clip-text text-transparent drop-shadow-sm
+              bg-linear-to-b from-foreground via-foreground/90 to-muted-foreground/40 bg-clip-text text-transparent drop-shadow-sm
               ${transforms[i]}
             `}
           >
