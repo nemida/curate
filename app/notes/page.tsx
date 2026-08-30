@@ -5,7 +5,6 @@ type NotesPageProps = {
   searchParams: Promise<{ filter?: string }>;
 };
 
-
 const Notes = async ( {searchParams} : NotesPageProps ) => {
 
   const { filter } = await searchParams;
@@ -14,7 +13,7 @@ const Notes = async ( {searchParams} : NotesPageProps ) => {
 
 
   return (
-    <div>
+    <div className='max-w-2xl'>
       <h2>Notes</h2>
       <form action="/notes" method="GET" style={{ marginBottom: '2rem' }}>
         <input 
