@@ -20,7 +20,8 @@ export const addNote = async (title: string, author: string, url: string) => {
 
   if (!user) throw new Error("Not logged in");
 
-  await db.insert(notes).values({ title, author, url, likes: 0, userId: user.id });
+  const [note] = await db.insert(notes).values({ title, author, url, likes: 0, userId: user.id }).returning({ id: notes.id });
+  return { noteId: note.id, userId: user.id };
 }
 
 

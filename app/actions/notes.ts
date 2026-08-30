@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { addNote, persistLikes } from "../services/notes";
+import { addToReadingList } from "../services/readingList";
 import { auth } from "@/auth";
 
 export const createNote = async (
@@ -40,7 +41,8 @@ export const createNote = async (
     };
   }
 
-  await addNote(title, author, url);
+  const result = await addNote(title, author, url);
+  await addToReadingList(result.userId, result.noteId);
   revalidatePath("/notes");
   return { error: "", success: true };
 };

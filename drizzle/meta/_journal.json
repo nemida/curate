@@ -43,6 +43,13 @@
       "when": 1788120139935,
       "tag": "0005_known_madame_masque",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1756598079000,
+      "tag": "0006_reading_list",
+      "breakpoints": true
     }
   ]
 }
