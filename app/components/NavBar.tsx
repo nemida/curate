@@ -16,7 +16,7 @@ export default function NavBar() {
           
         </Link>
         <Link href="/" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-          Home
+          home
         </Link>
         <Link href="/blogs" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
           blogs
