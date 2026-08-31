@@ -1,7 +1,6 @@
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "../services/session";
 import { getReadingListForUser } from "../services/readingList";
-import { generateAPIToken } from "../actions/users";
 import TokenSectionClient from "./TokenSectionClient";
 import { markAsReadAction } from "../actions/readingList";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
