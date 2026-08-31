@@ -21,6 +21,7 @@ export default function BlogFilter({ defaultValue }: { defaultValue?: string }) 
   return (
     <form onSubmit={handleSubmit} className="flex gap-2 mb-8">
       <Input
+        key={defaultValue || 'empty'}
         data-testid="filter-input"
         type="text"
         name="filter"
