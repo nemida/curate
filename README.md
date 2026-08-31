@@ -47,10 +47,6 @@ Curate is built on a modern, server-first React stack designed for speed and sim
    npm run dev
    ```
 
-## Design Philosophy
-
-The interface intentionally avoids heavy UI elements, standard SaaS marketing copy, and aggressive animations. We use system serif typography for a more editorial, bookish feel, relying heavily on white space and gentle transitions to make the reading and curation experience feel human.
-
 ## License
 
 This project is open-source and available under the MIT License.
