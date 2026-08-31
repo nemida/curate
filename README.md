@@ -8,7 +8,7 @@ This project was built to solve a simple problem: the internet is too loud, and 
 
 Curate is built on a modern, server-first React stack designed for speed and simplicity.
 
-- **Framework**: Next.js (App Router)
+- **Framework**: Next.js 
 - **Database**: PostgreSQL (hosted on Neon)
 - **ORM**: Drizzle ORM
 - **Authentication**: NextAuth.js
