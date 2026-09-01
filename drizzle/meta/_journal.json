@@ -78,6 +78,13 @@
       "when": 1756598081000,
       "tag": "0010_blog_likes",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1788406506714,
+      "tag": "0011_motionless_warstar",
+      "breakpoints": true
     }
   ]
 }

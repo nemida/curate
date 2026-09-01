@@ -9,7 +9,7 @@ type BlogsPageProps = {
 const Blogs = async ({ searchParams }: BlogsPageProps) => {
   const { filter } = await searchParams;
   const rawBlogs = await getBlogs(filter);
-  const sortedBlogs = [...rawBlogs].sort((a, b) => b.likes - a.likes);
+  const sortedBlogs = [...rawBlogs].sort((a, b) => b.blogLikes.length - a.blogLikes.length);
 
   return (
     <div className="max-w-2xl mx-auto">
