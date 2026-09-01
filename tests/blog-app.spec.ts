@@ -294,6 +294,70 @@ test.describe("Blog Application", () => {
       const blogsList = page.getByTestId("blogs-list")
       await expect(blogsList).toContainText("0 likes")
     })
+
+    test("owner can edit a blog", async ({ page }) => {
+      await loginUser(page, "testuser", "testpass123")
+      await createBlog(page, "Original Title", "Original Author", "http://original.com")
+
+      // Navigate to the blog detail page
+      await page.goto("/blogs")
+      await page.getByRole("link", { name: "Original Title" }).click()
+      await page.waitForURL(/\/blogs\/\d+/)
+
+      // Owner should see the Edit button
+      await expect(page.getByTestId("edit-blog-button")).toBeVisible()
+      await page.getByTestId("edit-blog-button").click()
+      await page.waitForURL(/\/blogs\/\d+\/edit/)
+
+      // Form should be pre-populated
+      await expect(page.getByLabel("Title", { exact: true })).toHaveValue("Original Title")
+      await expect(page.getByLabel("Author", { exact: true })).toHaveValue("Original Author")
+
+      // Update the title
+      await page.getByLabel("Title", { exact: true }).fill("Updated Title")
+      await page.getByLabel("Author", { exact: true }).fill("Updated Author")
+      await page.getByTestId("save-blog-button").click()
+
+      // Should redirect back to blog detail with updated title
+      await page.waitForURL(/\/blogs\/\d+$/)
+      await expect(page.getByTestId("blog-title")).toContainText("Updated Title")
+      await expect(page.getByTestId("blog-author")).toContainText("Updated Author")
+    })
+
+    test("owner can delete a blog", async ({ page }) => {
+      await loginUser(page, "testuser", "testpass123")
+      await createBlog(page, "Blog To Delete", "Some Author", "http://delete-me.com")
+
+      // Navigate to the blog detail page
+      await page.goto("/blogs")
+      await page.getByRole("link", { name: "Blog To Delete" }).click()
+      await page.waitForURL(/\/blogs\/\d+/)
+
+      // Owner should see the Delete button
+      await expect(page.getByTestId("delete-blog-button")).toBeVisible()
+      await page.getByTestId("delete-blog-button").click()
+
+      // Should redirect to blogs list and blog should be gone
+      await expect(page).toHaveURL("/blogs")
+      await expect(page.getByTestId("blogs-list")).not.toContainText("Blog To Delete")
+    })
+
+    test("non-owner does not see edit or delete buttons", async ({ page }) => {
+      // blogowner creates a blog
+      await createUser("blogowner", "Blog Owner", "password123")
+      await loginUser(page, "blogowner", "password123")
+      await createBlog(page, "Owner Blog", "Blog Owner", "http://owner.com")
+
+      // testuser views the blog
+      await loginUser(page, "testuser", "testpass123")
+      await page.goto("/blogs")
+      await page.getByRole("link", { name: "Owner Blog" }).click()
+      await page.waitForURL(/\/blogs\/\d+/)
+
+      // Should NOT see edit or delete buttons
+      await expect(page.getByTestId("edit-blog-button")).not.toBeVisible()
+      await expect(page.getByTestId("delete-blog-button")).not.toBeVisible()
+    })
   })
 
   test.describe("Me Page", () => {

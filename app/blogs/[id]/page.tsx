@@ -1,12 +1,13 @@
 import { notFound } from "next/navigation";
 import { getBlogById } from "../../services/blogs";
-import { increaseLikes } from "@/app/actions/blogs";
+import { increaseLikes, deleteBlogAction } from "@/app/actions/blogs";
 import { addToReadingListAction } from "@/app/actions/readingList";
 import { getCurrentUser } from "@/app/services/session";
 import { isInReadingList } from "@/app/services/readingList";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
+import Link from "next/link";
 
 const BlogPage = async ({ params }: { params: Promise<{ id: string }> }) => {
   const { id } = await params;
@@ -55,6 +56,28 @@ const BlogPage = async ({ params }: { params: Promise<{ id: string }> }) => {
                 {alreadyInList ? "✓ In reading list" : "+ Add to reading list"}
               </Button>
             </form>
+          )}
+          {isOwner && (
+            <>
+              <Link
+                data-testid="edit-blog-button"
+                href={`/blogs/${blog.id}/edit?title=${encodeURIComponent(blog.title)}&author=${encodeURIComponent(blog.author)}&url=${encodeURIComponent(blog.url)}`}
+                className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
+              >
+                Edit
+              </Link>
+              <form action={deleteBlogAction}>
+                <input type="hidden" name="id" value={blog.id} />
+                <Button
+                  data-testid="delete-blog-button"
+                  type="submit"
+                  variant="destructive"
+                  size="sm"
+                >
+                  Delete
+                </Button>
+              </form>
+            </>
           )}
         </CardFooter>
       </Card>

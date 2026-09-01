@@ -27,3 +27,11 @@ export const addBlog = async (title: string, author: string, url: string) => {
 export const persistLikes = async (id: number) => {
   await db.update(blogs).set({ likes: sql`${blogs.likes} + 1` }).where(eq(blogs.id, id));
 }
+
+export const updateBlog = async (id: number, title: string, author: string, url: string) => {
+  await db.update(blogs).set({ title, author, url }).where(eq(blogs.id, id));
+}
+
+export const deleteBlog = async (id: number) => {
+  await db.delete(blogs).where(eq(blogs.id, id));
+}
