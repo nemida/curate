@@ -14,7 +14,9 @@ export const createBlog = async (
       title?: string;
       author?: string;
       url?: string;
+      content?: string;
     };
+    success?: boolean;
   },
   formData: FormData,
 ) => {
@@ -25,24 +27,18 @@ export const createBlog = async (
 
   const title = formData.get("title") as string;
   const author = formData.get("author") as string;
-  const url = formData.get("url") as string;
+  const url = (formData.get("url") as string) || null;
+  const content = (formData.get("content") as string) || null;
 
-  if (
-    !title ||
-    title.length < 5 ||
-    !author ||
-    author.length < 5 ||
-    !url ||
-    url.length < 5
-  ) {
+  if (!title || title.length < 5 || !author || author.length < 5) {
     return {
-      error: "Title, Author, URL must be 5 characters long.",
-      values: { title, author, url },
+      error: "Title and Author must be at least 5 characters long.",
+      values: { title, author, url: url ?? "", content: content ?? "" },
       success: false,
     };
   }
 
-  const result = await addBlog(title, author, url);
+  const result = await addBlog(title, author, url, content);
   await addToReadingList(result.userId, result.blogId);
   revalidatePath("/blogs");
   return { error: "", success: true };
@@ -61,7 +57,7 @@ export const toggleLikeAction = async (formData: FormData) => {
 export const editBlog = async (
   prevState: {
     error: string;
-    values?: { title?: string; author?: string; url?: string };
+    values?: { title?: string; author?: string; url?: string; content?: string };
     success: boolean;
   },
   formData: FormData,
@@ -69,20 +65,16 @@ export const editBlog = async (
   const session = await auth();
   if (!session) redirect("/login");
 
-  const rawId = formData.get("id");
-  const id = Number(rawId);
+  const id = Number(formData.get("id"));
   const title = formData.get("title") as string;
   const author = formData.get("author") as string;
-  const url = formData.get("url") as string;
+  const url = (formData.get("url") as string) || null;
+  const content = (formData.get("content") as string) || null;
 
-  if (
-    !title || title.length < 5 ||
-    !author || author.length < 5 ||
-    !url || url.length < 5
-  ) {
+  if (!title || title.length < 5 || !author || author.length < 5) {
     return {
-      error: "Title, Author, URL must be at least 5 characters long.",
-      values: { title, author, url },
+      error: "Title and Author must be at least 5 characters long.",
+      values: { title, author, url: url ?? "", content: content ?? "" },
       success: false,
     };
   }
@@ -95,7 +87,7 @@ export const editBlog = async (
     return { error: "You are not the owner of this blog.", success: false };
   }
 
-  await updateBlog(id, title, author, url);
+  await updateBlog(id, title, author, url, content);
   revalidatePath(`/blogs/${id}`);
   revalidatePath("/blogs");
   return { error: "", success: true };

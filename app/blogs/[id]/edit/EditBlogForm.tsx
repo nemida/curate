@@ -1,5 +1,6 @@
 "use client";
-import { createBlog } from "@/app/actions/blogs";
+
+import { editBlog } from "@/app/actions/blogs";
 import { useNotification } from "@/app/components/NotificationContext";
 import MarkdownEditor from "@/app/components/MarkdownEditor";
 import { useRouter } from "next/navigation";
@@ -8,10 +9,23 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
-const NewBlog = () => {
-  const [state, formAction] = useActionState(createBlog, {
+type EditBlogFormProps = {
+  id: number;
+  initialTitle: string;
+  initialAuthor: string;
+  initialUrl: string;
+  initialContent: string;
+};
+
+const EditBlogForm = ({
+  id,
+  initialTitle,
+  initialAuthor,
+  initialUrl,
+  initialContent,
+}: EditBlogFormProps) => {
+  const [state, formAction] = useActionState(editBlog, {
     error: "",
-    values: { title: "", author: "", url: "", content: "" },
     success: false,
   });
 
@@ -20,42 +34,43 @@ const NewBlog = () => {
 
   useEffect(() => {
     if (state.success) {
-      showNotification("Blog created.");
-      router.push("/blogs");
+      showNotification("Blog updated.");
+      router.push(`/blogs/${id}`);
     }
-  }, [state, showNotification, router]);
+  }, [state, showNotification, router, id]);
 
   return (
     <div className="max-w-2xl mx-auto">
-      <h2 className="text-2xl font-bold mb-6">New blog</h2>
+      <h2 className="text-2xl font-bold mb-6">Edit blog</h2>
       <Card>
         <CardHeader>
           <CardTitle>Blog details</CardTitle>
         </CardHeader>
         <CardContent>
           <form action={formAction} className="flex flex-col gap-4">
+            <input type="hidden" name="id" value={id} />
             <div className="flex flex-col gap-1.5">
               <label htmlFor="title" className="text-sm font-medium">Title</label>
               <Input
-                key={`title-${state.values?.title || ""}`}
+                key={`title-${state.values?.title ?? initialTitle}`}
                 type="text"
                 id="title"
                 name="title"
                 required
                 minLength={5}
-                defaultValue={state.values?.title}
+                defaultValue={state.values?.title ?? initialTitle}
               />
             </div>
             <div className="flex flex-col gap-1.5">
               <label htmlFor="author" className="text-sm font-medium">Author</label>
               <Input
-                key={`author-${state.values?.author || ""}`}
+                key={`author-${state.values?.author ?? initialAuthor}`}
                 type="text"
                 id="author"
                 name="author"
                 required
                 minLength={5}
-                defaultValue={state.values?.author}
+                defaultValue={state.values?.author ?? initialAuthor}
               />
             </div>
             <div className="flex flex-col gap-1.5">
@@ -63,11 +78,11 @@ const NewBlog = () => {
                 URL <span className="text-muted-foreground font-normal">(optional)</span>
               </label>
               <Input
-                key={`url-${state.values?.url || ""}`}
+                key={`url-${state.values?.url ?? initialUrl}`}
                 type="text"
                 id="url"
                 name="url"
-                defaultValue={state.values?.url}
+                defaultValue={state.values?.url ?? initialUrl}
                 placeholder="https://..."
               />
             </div>
@@ -75,14 +90,28 @@ const NewBlog = () => {
               <label className="text-sm font-medium">
                 Content <span className="text-muted-foreground font-normal">(optional)</span>
               </label>
-              <MarkdownEditor name="content" defaultValue={state.values?.content} />
+              <MarkdownEditor
+                name="content"
+                defaultValue={state.values?.content ?? initialContent}
+              />
             </div>
             {state.error && (
-              <p className="text-destructive text-sm">{state.error}</p>
+              <p data-testid="edit-error" className="text-destructive text-sm">
+                {state.error}
+              </p>
             )}
-            <Button data-testid="create-blog-button" type="submit" className="self-start">
-              Create
-            </Button>
+            <div className="flex gap-2">
+              <Button data-testid="save-blog-button" type="submit">
+                Save changes
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => router.push(`/blogs/${id}`)}
+              >
+                Cancel
+              </Button>
+            </div>
           </form>
         </CardContent>
       </Card>
@@ -90,4 +119,4 @@ const NewBlog = () => {
   );
 };
 
-export default NewBlog;
+export default EditBlogForm;

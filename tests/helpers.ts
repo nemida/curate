@@ -52,12 +52,26 @@ export const createBlog = async (
   page: Page,
   title: string,
   author: string,
-  url: string,
+  url: string = "",
+  content: string = "",
 ) => {
   await page.goto("/blogs/new")
   await page.getByLabel("Title", { exact: true }).fill(title)
   await page.getByLabel("Author", { exact: true }).fill(author)
-  await page.getByLabel("URL", { exact: true }).fill(url)
+  if (url) {
+    await page.getByLabel("URL", { exact: true }).fill(url)
+  }
+  if (content) {
+    // The markdown editor syncs to a hidden input — set it directly
+    await page.evaluate((val) => {
+      const input = document.querySelector('input[name="content"]') as HTMLInputElement
+      if (input) {
+        const nativeInputValueSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value")?.set
+        nativeInputValueSetter?.call(input, val)
+        input.dispatchEvent(new Event("input", { bubbles: true }))
+      }
+    }, content)
+  }
   await page.getByRole("button", { name: "Create" }).click()
   // Wait for navigation to blogs page
   await page.waitForURL("/blogs")

@@ -252,6 +252,27 @@ test.describe("Blog Application", () => {
       await expect(page.getByTestId("blog-author")).toContainText("Test Author")
     })
 
+    test("blog content is rendered as markdown", async ({ page }) => {
+      await loginUser(page, "testuser", "testpass123")
+      await createBlog(
+        page,
+        "Markdown Blog",
+        "Test Author",
+        "",
+        "## Hello World\n\nThis is **bold** text.",
+      )
+
+      await page.goto("/blogs")
+      await page.getByRole("link", { name: "Markdown Blog" }).click()
+      await page.waitForURL(/\/blogs\/\d+/)
+
+      // Markdown should be rendered as HTML
+      const content = page.getByTestId("blog-content")
+      await expect(content).toBeVisible()
+      await expect(content.locator("h2")).toContainText("Hello World")
+      await expect(content.locator("strong")).toContainText("bold")
+    })
+
     test("blogs can be filtered", async ({ page }) => {
       await loginUser(page, "testuser", "testpass123")
 

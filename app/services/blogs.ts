@@ -17,12 +17,12 @@ export const getBlogById = async (id: number) => {
   });
 }
 
-export const addBlog = async (title: string, author: string, url: string) => {
+export const addBlog = async (title: string, author: string, url: string | null, content: string | null) => {
   const user = await getCurrentUser()
 
   if (!user) throw new Error("Not logged in");
 
-  const [blog] = await db.insert(blogs).values({ title, author, url, userId: user.id }).returning({ id: blogs.id });
+  const [blog] = await db.insert(blogs).values({ title, author, url, content, userId: user.id }).returning({ id: blogs.id });
   return { blogId: blog.id, userId: user.id };
 }
 
@@ -57,8 +57,8 @@ export const toggleLike = async (userId: number, blogId: number): Promise<"liked
   }
 }
 
-export const updateBlog = async (id: number, title: string, author: string, url: string) => {
-  await db.update(blogs).set({ title, author, url }).where(eq(blogs.id, id));
+export const updateBlog = async (id: number, title: string, author: string, url: string | null, content: string | null) => {
+  await db.update(blogs).set({ title, author, url, content }).where(eq(blogs.id, id));
 }
 
 export const deleteBlog = async (id: number) => {

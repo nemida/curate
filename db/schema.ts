@@ -5,7 +5,8 @@ export const blogs = pgTable("blogs", {
   id: serial("id").primaryKey(),
   title: text("title").notNull(),
   author: text("author").notNull(),
-  url: text("url").notNull(),
+  url: text("url"),
+  content: text("content"),
   userId: integer("user_id").notNull().references(() => users.id),
 })
 
