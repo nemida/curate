@@ -2,7 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
-import { addBlog, persistLikes, getBlogById, updateBlog, deleteBlog } from "../services/blogs";
+import { addBlog, toggleLike, getBlogById, updateBlog, deleteBlog } from "../services/blogs";
 import { addToReadingList } from "../services/readingList";
 import { auth } from "@/auth";
 import { getCurrentUser } from "../services/session";
@@ -48,16 +48,14 @@ export const createBlog = async (
   return { error: "", success: true };
 };
 
-export const increaseLikes = async (formData: FormData) => {
-  const session = await auth();
-  if (!session) {
-    redirect("/login");
-  }
+export const toggleLikeAction = async (formData: FormData) => {
+  const currentUser = await getCurrentUser();
+  if (!currentUser) redirect("/login");
 
-  const rawId = formData.get("id");
-  const id = Number(rawId);
-  await persistLikes(id);
+  const id = Number(formData.get("id"));
+  await toggleLike(currentUser.id, id);
   revalidatePath(`/blogs/${id}`);
+  revalidatePath("/blogs");
 };
 
 export const editBlog = async (

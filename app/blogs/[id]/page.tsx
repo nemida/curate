@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { getBlogById } from "../../services/blogs";
-import { increaseLikes, deleteBlogAction } from "@/app/actions/blogs";
+import { toggleLikeAction, deleteBlogAction } from "@/app/actions/blogs";
 import { addToReadingListAction } from "@/app/actions/readingList";
 import { getCurrentUser } from "@/app/services/session";
 import { isInReadingList } from "@/app/services/readingList";
@@ -23,6 +23,11 @@ const BlogPage = async ({ params }: { params: Promise<{ id: string }> }) => {
     ? await isInReadingList(currentUser.id, blog.id)
     : false;
 
+  const likeCount = blog.blogLikes.length;
+  const userHasLiked = currentUser
+    ? blog.blogLikes.some((l) => l.userId === currentUser.id)
+    : false;
+
   return (
     <div data-testid="blog-detail" className="max-w-xl mx-auto">
       <Card>
@@ -38,10 +43,15 @@ const BlogPage = async ({ params }: { params: Promise<{ id: string }> }) => {
           </CardContent>
         )}
         <CardFooter className="gap-3 flex-wrap">
-          <form action={increaseLikes}>
+          <form action={toggleLikeAction}>
             <input type="hidden" name="id" value={blog.id} />
-            <Button type="submit" variant="outline" size="sm">
-              ♥ {blog.likes} likes
+            <Button
+              data-testid="like-button"
+              type="submit"
+              variant={userHasLiked ? "default" : "outline"}
+              size="sm"
+            >
+              ♥ {likeCount} {likeCount === 1 ? "like" : "likes"}
             </Button>
           </form>
           {blog.url && (

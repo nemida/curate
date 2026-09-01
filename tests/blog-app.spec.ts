@@ -295,6 +295,73 @@ test.describe("Blog Application", () => {
       await expect(blogsList).toContainText("0 likes")
     })
 
+    test("user can like a blog", async ({ page }) => {
+      // Another user owns the blog so testuser can like it
+      await createUser("blogowner", "Blog Owner", "password123")
+      await loginUser(page, "blogowner", "password123")
+      await createBlog(page, "Likeable Blog", "Blog Owner", "http://likeable.com")
+
+      await loginUser(page, "testuser", "testpass123")
+      await page.goto("/blogs")
+      await page.getByRole("link", { name: "Likeable Blog" }).click()
+      await page.waitForURL(/\/blogs\/\d+/)
+
+      // Like count should start at 0
+      await expect(page.getByTestId("like-button")).toContainText("0 likes")
+
+      // Click like
+      await page.getByTestId("like-button").click()
+      await page.waitForLoadState("networkidle")
+
+      // Like count should now be 1
+      await expect(page.getByTestId("like-button")).toContainText("1 like")
+    })
+
+    test("user can unlike a blog by clicking again", async ({ page }) => {
+      await createUser("blogowner", "Blog Owner", "password123")
+      await loginUser(page, "blogowner", "password123")
+      await createBlog(page, "Likeable Blog", "Blog Owner", "http://likeable.com")
+
+      await loginUser(page, "testuser", "testpass123")
+      await page.goto("/blogs")
+      await page.getByRole("link", { name: "Likeable Blog" }).click()
+      await page.waitForURL(/\/blogs\/\d+/)
+
+      // Like then unlike
+      await page.getByTestId("like-button").click()
+      await page.waitForLoadState("networkidle")
+      await expect(page.getByTestId("like-button")).toContainText("1 like")
+
+      await page.getByTestId("like-button").click()
+      await page.waitForLoadState("networkidle")
+      await expect(page.getByTestId("like-button")).toContainText("0 likes")
+    })
+
+    test("two users liking increments count correctly", async ({ page }) => {
+      await createUser("blogowner", "Blog Owner", "password123")
+      await loginUser(page, "blogowner", "password123")
+      await createBlog(page, "Popular Blog", "Blog Owner", "http://popular.com")
+
+      // testuser likes it
+      await loginUser(page, "testuser", "testpass123")
+      await page.goto("/blogs")
+      await page.getByRole("link", { name: "Popular Blog" }).click()
+      await page.waitForURL(/\/blogs\/\d+/)
+      await page.getByTestId("like-button").click()
+      await page.waitForLoadState("networkidle")
+      await expect(page.getByTestId("like-button")).toContainText("1 like")
+
+      // second user also likes it
+      await createUser("seconduser", "Second User", "password123")
+      await loginUser(page, "seconduser", "password123")
+      await page.goto("/blogs")
+      await page.getByRole("link", { name: "Popular Blog" }).click()
+      await page.waitForURL(/\/blogs\/\d+/)
+      await page.getByTestId("like-button").click()
+      await page.waitForLoadState("networkidle")
+      await expect(page.getByTestId("like-button")).toContainText("2 likes")
+    })
+
     test("owner can edit a blog", async ({ page }) => {
       await loginUser(page, "testuser", "testpass123")
       await createBlog(page, "Original Title", "Original Author", "http://original.com")

@@ -71,6 +71,13 @@
       "when": 1788128087166,
       "tag": "0009_common_spectrum",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1756598081000,
+      "tag": "0010_blog_likes",
+      "breakpoints": true
     }
   ]
 }

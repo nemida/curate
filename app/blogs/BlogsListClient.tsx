@@ -11,7 +11,7 @@ type Blog = {
   title: string;
   author: string;
   url: string | null;
-  likes: number;
+  blogLikes: { id: number }[];
 };
 
 export default function BlogsListClient({ blogs }: { blogs: Blog[] }) {
@@ -21,36 +21,39 @@ export default function BlogsListClient({ blogs }: { blogs: Blog[] }) {
 
   return (
     <ul data-testid="blogs-list" className="flex flex-col gap-3">
-      {blogs.map((blog) => (
-        <li key={blog.id}>
-          <Card>
-            <CardHeader>
-              <div className="flex items-start justify-between">
-                <div>
-                  <CardTitle><Link href={`/blogs/${blog.id}`}>{blog.title}</Link></CardTitle>
-                  <CardDescription>by {blog.author}</CardDescription>
+      {blogs.map((blog) => {
+        const likeCount = blog.blogLikes.length;
+        return (
+          <li key={blog.id}>
+            <Card>
+              <CardHeader>
+                <div className="flex items-start justify-between">
+                  <div>
+                    <CardTitle><Link href={`/blogs/${blog.id}`}>{blog.title}</Link></CardTitle>
+                    <CardDescription>by {blog.author}</CardDescription>
+                  </div>
+                  <Badge variant="secondary">{likeCount} {likeCount === 1 ? "like" : "likes"}</Badge>
                 </div>
-                <Badge variant="secondary">{blog.likes} likes</Badge>
-              </div>
-            </CardHeader>
-            <CardFooter className="gap-3">
-              <Link href={`/blogs/${blog.id}`} className={cn(buttonVariants({ size: "sm" }))}>
-                View →
-              </Link>
-              {blog.url && (
-                <a
-                  href={blog.url.startsWith("http") ? blog.url : `https://${blog.url}`}
-                  target="_blank"
-                  rel="noreferrer"
-                  className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
-                >
-                  Source
-                </a>
-              )}
-            </CardFooter>
-          </Card>
-        </li>
-      ))}
+              </CardHeader>
+              <CardFooter className="gap-3">
+                <Link href={`/blogs/${blog.id}`} className={cn(buttonVariants({ size: "sm" }))}>
+                  View →
+                </Link>
+                {blog.url && (
+                  <a
+                    href={blog.url.startsWith("http") ? blog.url : `https://${blog.url}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
+                  >
+                    Source
+                  </a>
+                )}
+              </CardFooter>
+            </Card>
+          </li>
+        );
+      })}
     </ul>
   );
 }
