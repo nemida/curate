@@ -63,24 +63,16 @@ export const createBlog = async (
     await page.getByLabel("URL", { exact: true }).fill(url)
   }
   if (content) {
-    await page.evaluate((val) => {
-      const input = document.querySelector('input[name="content"]') as HTMLInputElement
-      if (input) {
-        const nativeInputValueSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value")?.set
-        nativeInputValueSetter?.call(input, val)
-        input.dispatchEvent(new Event("input", { bubbles: true }))
-      }
-    }, content)
+    // Type into the CodeMirror editor inside the MD editor
+    const editorTextarea = page.locator('.w-md-editor-text-input')
+    await editorTextarea.fill(content)
   }
   if (tags.length > 0) {
-    await page.evaluate((val) => {
-      const input = document.querySelector('input[name="tags"]') as HTMLInputElement
-      if (input) {
-        const nativeInputValueSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value")?.set
-        nativeInputValueSetter?.call(input, val)
-        input.dispatchEvent(new Event("input", { bubbles: true }))
-      }
-    }, tags.join(","))
+    const tagInput = page.getByTestId("tag-input")
+    for (const tag of tags) {
+      await tagInput.fill(tag)
+      await tagInput.press("Enter")
+    }
   }
   await page.getByRole("button", { name: "Create" }).click()
   await page.waitForURL("/blogs")

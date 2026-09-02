@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils";
 import Link from "next/link";
 import ReactMarkdown from "react-markdown";
 import rehypeSanitize from "rehype-sanitize";
+import CommentsSection from "./CommentsSection";
 
 const BlogPage = async ({ params }: { params: Promise<{ id: string }> }) => {
   const { id } = await params;
@@ -127,6 +128,12 @@ const BlogPage = async ({ params }: { params: Promise<{ id: string }> }) => {
           )}
         </CardFooter>
       </Card>
+    </div>
+      <CommentsSection
+        blogId={blog.id}
+        comments={blog.comments}
+        currentUserId={currentUser?.id}
+      />
     </div>
   );
 };

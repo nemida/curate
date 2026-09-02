@@ -37,6 +37,12 @@ export const getBlogById = async (id: number) => {
     with: {
       blogLikes: true,
       blogTags: { with: { tag: true } },
+      comments: {
+        with: {
+          user: { columns: { id: true, name: true, username: true } },
+        },
+        orderBy: (c, { asc }) => [asc(c.createdAt)],
+      },
     },
   });
 }
