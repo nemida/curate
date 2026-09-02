@@ -1,8 +1,11 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getUserByUsername } from "../../services/users";
+import { getCurrentUser } from "@/app/services/session";
+import { isFollowing, getFollowerCount, getFollowingCount } from "@/app/services/follows";
+import { toggleFollowAction } from "@/app/actions/follows";
 import { Card, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
-import { buttonVariants } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
@@ -12,16 +15,47 @@ const UserPage = async ({ params }: { params: Promise<{ username: string }> }) =
 
   if (!user) notFound();
 
+  const currentUser = await getCurrentUser();
+  const isOwnProfile = currentUser?.id === user.id;
+  const following = currentUser && !isOwnProfile
+    ? await isFollowing(currentUser.id, user.id)
+    : false;
+
+  const [followerCount, followingCount] = await Promise.all([
+    getFollowerCount(user.id),
+    getFollowingCount(user.id),
+  ]);
+
   return (
-    <div>
-      <div className="flex items-center gap-4 mb-8">
-        <div className="w-14 h-14 rounded-full bg-muted flex items-center justify-center text-xl font-bold">
-          {user.name[0].toUpperCase()}
+    <div className="max-w-2xl mx-auto">
+      <div className="flex items-start justify-between mb-8">
+        <div className="flex items-center gap-4">
+          <div className="w-14 h-14 rounded-full bg-muted flex items-center justify-center text-xl font-bold">
+            {user.name[0].toUpperCase()}
+          </div>
+          <div>
+            <h2 className="text-2xl font-bold">{user.name}</h2>
+            <p className="text-sm text-muted-foreground">@{user.username}</p>
+            <div className="flex gap-4 mt-1 text-sm text-muted-foreground">
+              <span data-testid="follower-count"><strong>{followerCount}</strong> followers</span>
+              <span data-testid="following-count"><strong>{followingCount}</strong> following</span>
+            </div>
+          </div>
         </div>
-        <div>
-          <h2 className="text-2xl font-bold">{user.name}</h2>
-          <p className="text-sm text-muted-foreground">@{user.username}</p>
-        </div>
+        {currentUser && !isOwnProfile && (
+          <form action={toggleFollowAction}>
+            <input type="hidden" name="followingId" value={user.id} />
+            <input type="hidden" name="username" value={user.username} />
+            <Button
+              data-testid="follow-button"
+              type="submit"
+              variant={following ? "outline" : "default"}
+              size="sm"
+            >
+              {following ? "Unfollow" : "Follow"}
+            </Button>
+          </form>
+        )}
       </div>
 
       <h3 className="text-lg font-semibold mb-4">Blogs</h3>

@@ -54,11 +54,21 @@ export const comments = pgTable("comments", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
 })
 
+export const follows = pgTable("follows", {
+  id: serial("id").primaryKey(),
+  followerId: integer("follower_id").notNull().references(() => users.id),
+  followingId: integer("following_id").notNull().references(() => users.id),
+}, (t) => [
+  unique("follows_follower_following_unique").on(t.followerId, t.followingId),
+])
+
 export const usersRelations = relations(users, ({ many }) => ({
   blogs: many(blogs),
   readingList: many(readingList),
   blogLikes: many(blogLikes),
   comments: many(comments),
+  following: many(follows, { relationName: "follower" }),
+  followers: many(follows, { relationName: "following" }),
 }))
 
 export const blogsRelations = relations(blogs, ({ one, many }) => ({
@@ -117,5 +127,18 @@ export const commentsRelations = relations(comments, ({ one }) => ({
   blog: one(blogs, {
     fields: [comments.blogId],
     references: [blogs.id],
+  }),
+}))
+
+export const followsRelations = relations(follows, ({ one }) => ({
+  follower: one(users, {
+    fields: [follows.followerId],
+    references: [users.id],
+    relationName: "follower",
+  }),
+  following: one(users, {
+    fields: [follows.followingId],
+    references: [users.id],
+    relationName: "following",
   }),
 }))

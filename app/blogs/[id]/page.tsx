@@ -128,7 +128,6 @@ const BlogPage = async ({ params }: { params: Promise<{ id: string }> }) => {
           )}
         </CardFooter>
       </Card>
-    </div>
       <CommentsSection
         blogId={blog.id}
         comments={blog.comments}
