@@ -9,7 +9,11 @@ export const getUsers = async () => {
 export const getUserByUsername = async (username: string) => {
   return db.query.users.findFirst({
     where: eq(users.username, username),
-    with: { blogs: true },
+    with: {
+      blogs: {
+        with: { blogLikes: true },
+      },
+    },
   });
 };
 

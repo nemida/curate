@@ -12,7 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 const NewBlog = () => {
   const [state, formAction] = useActionState(createBlog, {
     error: "",
-    values: { title: "", author: "", url: "", content: "" },
+    values: { title: "", author: "", url: "", content: "", tags: "" },
     success: false,
   });
 

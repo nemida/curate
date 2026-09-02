@@ -37,7 +37,7 @@ const UserPage = async ({ params }: { params: Promise<{ username: string }> }) =
               <CardHeader>
                 <div className="flex items-start justify-between">
                   <CardTitle>{blog.title}</CardTitle>
-                  <Badge variant="secondary">♥ {blog.likes}</Badge>
+                  <Badge variant="secondary">♥ {blog.blogLikes?.length ?? 0}</Badge>
                 </div>
               </CardHeader>
               <CardFooter className="gap-3">
