@@ -3,6 +3,7 @@
 import { editBlog } from "@/app/actions/blogs";
 import { useNotification } from "@/app/components/NotificationContext";
 import MarkdownEditor from "@/app/components/MarkdownEditor";
+import TagInput from "@/app/components/TagInput";
 import { useRouter } from "next/navigation";
 import { useActionState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
@@ -15,6 +16,7 @@ type EditBlogFormProps = {
   initialAuthor: string;
   initialUrl: string;
   initialContent: string;
+  initialTags: string;
 };
 
 const EditBlogForm = ({
@@ -23,6 +25,7 @@ const EditBlogForm = ({
   initialAuthor,
   initialUrl,
   initialContent,
+  initialTags,
 }: EditBlogFormProps) => {
   const [state, formAction] = useActionState(editBlog, {
     error: "",
@@ -93,6 +96,15 @@ const EditBlogForm = ({
               <MarkdownEditor
                 name="content"
                 defaultValue={state.values?.content ?? initialContent}
+              />
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <label className="text-sm font-medium">
+                Tags <span className="text-muted-foreground font-normal">(optional)</span>
+              </label>
+              <TagInput
+                name="tags"
+                defaultValue={state.values?.tags ?? initialTags}
               />
             </div>
             {state.error && (

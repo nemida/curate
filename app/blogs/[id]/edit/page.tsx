@@ -25,6 +25,7 @@ const EditBlogPage = async ({ params }: EditBlogPageProps) => {
       initialAuthor={blog.author}
       initialUrl={blog.url ?? ""}
       initialContent={blog.content ?? ""}
+      initialTags={blog.blogTags.map((bt) => bt.tag.name).join(",")}
     />
   );
 };

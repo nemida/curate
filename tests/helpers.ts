@@ -54,6 +54,7 @@ export const createBlog = async (
   author: string,
   url: string = "",
   content: string = "",
+  tags: string[] = [],
 ) => {
   await page.goto("/blogs/new")
   await page.getByLabel("Title", { exact: true }).fill(title)
@@ -62,7 +63,6 @@ export const createBlog = async (
     await page.getByLabel("URL", { exact: true }).fill(url)
   }
   if (content) {
-    // The markdown editor syncs to a hidden input — set it directly
     await page.evaluate((val) => {
       const input = document.querySelector('input[name="content"]') as HTMLInputElement
       if (input) {
@@ -72,7 +72,16 @@ export const createBlog = async (
       }
     }, content)
   }
+  if (tags.length > 0) {
+    await page.evaluate((val) => {
+      const input = document.querySelector('input[name="tags"]') as HTMLInputElement
+      if (input) {
+        const nativeInputValueSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value")?.set
+        nativeInputValueSetter?.call(input, val)
+        input.dispatchEvent(new Event("input", { bubbles: true }))
+      }
+    }, tags.join(","))
+  }
   await page.getByRole("button", { name: "Create" }).click()
-  // Wait for navigation to blogs page
   await page.waitForURL("/blogs")
 }

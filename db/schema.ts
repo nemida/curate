@@ -18,6 +18,19 @@ export const blogLikes = pgTable("blog_likes", {
   unique("blog_likes_user_blog_unique").on(t.userId, t.blogId),
 ])
 
+export const tags = pgTable("tags", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull().unique(),
+})
+
+export const blogTags = pgTable("blog_tags", {
+  id: serial("id").primaryKey(),
+  blogId: integer("blog_id").notNull().references(() => blogs.id),
+  tagId: integer("tag_id").notNull().references(() => tags.id),
+}, (t) => [
+  unique("blog_tags_blog_tag_unique").on(t.blogId, t.tagId),
+])
+
 export const users = pgTable("users", {
   id: serial("id").primaryKey(),
   username: text("username").notNull().unique(),
@@ -46,6 +59,22 @@ export const blogsRelations = relations(blogs, ({ one, many }) => ({
   }),
   readingList: many(readingList),
   blogLikes: many(blogLikes),
+  blogTags: many(blogTags),
+}))
+
+export const tagsRelations = relations(tags, ({ many }) => ({
+  blogTags: many(blogTags),
+}))
+
+export const blogTagsRelations = relations(blogTags, ({ one }) => ({
+  blog: one(blogs, {
+    fields: [blogTags.blogId],
+    references: [blogs.id],
+  }),
+  tag: one(tags, {
+    fields: [blogTags.tagId],
+    references: [tags.id],
+  }),
 }))
 
 export const blogLikesRelations = relations(blogLikes, ({ one }) => ({

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Card, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardDescription, CardFooter, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -12,6 +12,7 @@ type Blog = {
   author: string;
   url: string | null;
   blogLikes: { id: number }[];
+  blogTags: { tag: { id: number; name: string } }[];
 };
 
 export default function BlogsListClient({ blogs }: { blogs: Blog[] }) {
@@ -35,6 +36,22 @@ export default function BlogsListClient({ blogs }: { blogs: Blog[] }) {
                   <Badge variant="secondary">{likeCount} {likeCount === 1 ? "like" : "likes"}</Badge>
                 </div>
               </CardHeader>
+              {blog.blogTags.length > 0 && (
+                <CardContent className="pt-0 pb-2">
+                  <div className="flex flex-wrap gap-1.5">
+                    {blog.blogTags.map(({ tag }) => (
+                      <Link
+                        key={tag.id}
+                        href={`/blogs?tag=${encodeURIComponent(tag.name)}`}
+                        className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors hover:bg-secondary"
+                        data-testid={`card-tag-${tag.name}`}
+                      >
+                        {tag.name}
+                      </Link>
+                    ))}
+                  </div>
+                </CardContent>
+              )}
               <CardFooter className="gap-3">
                 <Link href={`/blogs/${blog.id}`} className={cn(buttonVariants({ size: "sm" }))}>
                   View →

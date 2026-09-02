@@ -383,6 +383,77 @@ test.describe("Blog Application", () => {
       await expect(page.getByTestId("like-button")).toContainText("2 likes")
     })
 
+    test("tags are shown on blog detail page", async ({ page }) => {
+      await loginUser(page, "testuser", "testpass123")
+      await createBlog(
+        page,
+        "Tagged Blog",
+        "Test Author",
+        "",
+        "",
+        ["javascript", "nextjs"],
+      )
+
+      await page.goto("/blogs")
+      await page.getByRole("link", { name: "Tagged Blog" }).click()
+      await page.waitForURL(/\/blogs\/\d+/)
+
+      const tagsSection = page.getByTestId("blog-tags")
+      await expect(tagsSection).toBeVisible()
+      await expect(tagsSection).toContainText("javascript")
+      await expect(tagsSection).toContainText("nextjs")
+    })
+
+    test("blogs can be filtered by tag", async ({ page }) => {
+      await loginUser(page, "testuser", "testpass123")
+      await createBlog(
+        page,
+        "JS Blog",
+        "Test Author",
+        "",
+        "",
+        ["javascript"],
+      )
+      await createBlog(
+        page,
+        "Python Blog",
+        "Test Author",
+        "",
+        "",
+        ["python"],
+      )
+
+      // Click on a tag badge to filter
+      await page.goto("/blogs")
+      await page.getByTestId("card-tag-javascript").first().click()
+      await page.waitForURL(/\/blogs\?tag=javascript/)
+
+      // Only the JS blog should be visible
+      const blogsList = page.getByTestId("blogs-list")
+      await expect(blogsList).toContainText("JS Blog")
+      await expect(blogsList).not.toContainText("Python Blog")
+
+      // Active tag filter indicator should be shown
+      await expect(page.getByTestId("active-tag-filter")).toContainText("javascript")
+    })
+
+    test("clearing tag filter shows all blogs", async ({ page }) => {
+      await loginUser(page, "testuser", "testpass123")
+      await createBlog(page, "JS Blog", "Test Author", "", "", ["javascript"])
+      await createBlog(page, "Python Blog", "Test Author", "", "", ["python"])
+
+      await page.goto("/blogs?tag=javascript")
+      await expect(page.getByTestId("blogs-list")).not.toContainText("Python Blog")
+
+      // Clear the tag filter
+      await page.getByTestId("clear-tag-filter").click()
+      await page.waitForURL("/blogs")
+
+      // Both blogs should now be visible
+      await expect(page.getByTestId("blogs-list")).toContainText("JS Blog")
+      await expect(page.getByTestId("blogs-list")).toContainText("Python Blog")
+    })
+
     test("owner can edit a blog", async ({ page }) => {
       await loginUser(page, "testuser", "testpass123")
       await createBlog(page, "Original Title", "Original Author", "http://original.com")

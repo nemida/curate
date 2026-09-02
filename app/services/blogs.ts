@@ -1,19 +1,43 @@
 import { db } from "@/db";
-import { blogs, blogLikes } from "@/db/schema";
-import { eq, ilike, and, count } from "drizzle-orm";
+import { blogs, blogLikes, blogTags, tags } from "@/db/schema";
+import { eq, ilike, and, count, inArray } from "drizzle-orm";
 import { getCurrentUser } from "./session";
 
-export const getBlogs = async (filter?: string) => {
+export const getBlogs = async (filter?: string, tag?: string) => {
+ 
+  let tagBlogIds: number[] | undefined;
+  if (tag) {
+    const rows = await db
+      .select({ blogId: blogTags.blogId })
+      .from(blogTags)
+      .innerJoin(tags, eq(tags.id, blogTags.tagId))
+      .where(eq(tags.name, tag.toLowerCase()));
+    tagBlogIds = rows.map((r) => r.blogId);
+
+    if (tagBlogIds.length === 0) return [];
+  }
+
   return db.query.blogs.findMany({
-    where: filter ? ilike(blogs.title, `%${filter}%`) : undefined,
-    with: { blogLikes: true },
+    where: (b, { and: qAnd, ilike: qIlike, inArray: qInArray }) => {
+      const conditions = [];
+      if (filter) conditions.push(qIlike(b.title, `%${filter}%`));
+      if (tagBlogIds) conditions.push(qInArray(b.id, tagBlogIds));
+      return conditions.length > 0 ? qAnd(...conditions) : undefined;
+    },
+    with: {
+      blogLikes: true,
+      blogTags: { with: { tag: true } },
+    },
   });
 }
 
 export const getBlogById = async (id: number) => {
   return db.query.blogs.findFirst({
     where: eq(blogs.id, id),
-    with: { blogLikes: true },
+    with: {
+      blogLikes: true,
+      blogTags: { with: { tag: true } },
+    },
   });
 }
 

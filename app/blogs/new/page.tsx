@@ -2,6 +2,7 @@
 import { createBlog } from "@/app/actions/blogs";
 import { useNotification } from "@/app/components/NotificationContext";
 import MarkdownEditor from "@/app/components/MarkdownEditor";
+import TagInput from "@/app/components/TagInput";
 import { useRouter } from "next/navigation";
 import { useActionState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
@@ -76,6 +77,12 @@ const NewBlog = () => {
                 Content <span className="text-muted-foreground font-normal">(optional)</span>
               </label>
               <MarkdownEditor name="content" defaultValue={state.values?.content} />
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <label className="text-sm font-medium">
+                Tags <span className="text-muted-foreground font-normal">(optional)</span>
+              </label>
+              <TagInput name="tags" defaultValue={state.values?.tags} />
             </div>
             {state.error && (
               <p className="text-destructive text-sm">{state.error}</p>

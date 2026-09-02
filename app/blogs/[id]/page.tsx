@@ -53,6 +53,23 @@ const BlogPage = async ({ params }: { params: Promise<{ id: string }> }) => {
           </CardContent>
         )}
 
+        {blog.blogTags.length > 0 && (
+          <CardContent className="pt-0">
+            <div data-testid="blog-tags" className="flex flex-wrap gap-1.5">
+              {blog.blogTags.map(({ tag }) => (
+                <Link
+                  key={tag.id}
+                  href={`/blogs?tag=${encodeURIComponent(tag.name)}`}
+                  className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors hover:bg-secondary"
+                  data-testid={`tag-${tag.name}`}
+                >
+                  {tag.name}
+                </Link>
+              ))}
+            </div>
+          </CardContent>
+        )}
+
         {url && (
           <CardContent className="pt-0">
             <a href={url} className="text-sm text-primary hover:underline break-all" target="_blank" rel="noreferrer">
