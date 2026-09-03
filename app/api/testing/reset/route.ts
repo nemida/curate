@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { db } from "@/db";
-import { users, blogs, readingList } from "@/db/schema";
+import { users, blogs, readingList, blogLikes, blogTags, comments, follows, tags } from "@/db/schema";
 
 export const DELETE = async () => {
   if (process.env.NODE_ENV === "production") {
@@ -11,10 +11,15 @@ export const DELETE = async () => {
   }
 
   try {
+    await db.delete(comments);
+    await db.delete(blogLikes);
+    await db.delete(blogTags);
     await db.delete(readingList);
+    await db.delete(follows);
     await db.delete(blogs);
+    await db.delete(tags);
     await db.delete(users);
-    
+
     return new NextResponse(null, { status: 204 });
   } catch (error) {
     console.error("Failed to reset database:", error);

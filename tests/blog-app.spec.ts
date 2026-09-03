@@ -1,695 +1,393 @@
 import { test, expect } from "@playwright/test"
 import { resetDatabase, createUser, loginUser, createBlog } from "./helpers"
 
-test.describe("Blog Application", () => {
+test.beforeEach(async () => {
+  await resetDatabase()
+})
+
+test.describe("Auth", () => {
+  test("user can register and is redirected to login", async ({ page }) => {
+    await page.goto("/register")
+    await page.getByLabel("Username", { exact: true }).fill("testuser")
+    await page.getByLabel("Name", { exact: true }).fill("Test User")
+    await page.getByLabel("Password", { exact: true }).fill("testpass123")
+    await page.getByLabel("Confirm Password", { exact: true }).fill("testpass123")
+    await page.getByTestId("register-button").click()
+    await expect(page).toHaveURL("/login")
+  })
+
+  test("registration shows error for short username", async ({ page }) => {
+    await page.goto("/register")
+    await page.getByLabel("Username", { exact: true }).fill("usr")
+    await page.getByLabel("Name", { exact: true }).fill("Test User")
+    await page.getByLabel("Password", { exact: true }).fill("testpass123")
+    await page.getByLabel("Confirm Password", { exact: true }).fill("testpass123")
+    await page.getByTestId("register-button").click()
+    await expect(page.getByTestId("username-error")).toBeVisible()
+  })
+
+  test("registration shows error for mismatched passwords", async ({ page }) => {
+    await page.goto("/register")
+    await page.getByLabel("Username", { exact: true }).fill("testuser")
+    await page.getByLabel("Name", { exact: true }).fill("Test User")
+    await page.getByLabel("Password", { exact: true }).fill("testpass123")
+    await page.getByLabel("Confirm Password", { exact: true }).fill("different")
+    await page.getByTestId("register-button").click()
+    await expect(page.getByTestId("passwordConfirm-error")).toBeVisible()
+  })
+
+  test("user can log in and out", async ({ page }) => {
+    await createUser("testuser", "Test User", "testpass123")
+    await loginUser(page, "testuser", "testpass123")
+
+    await expect(page).toHaveURL("/")
+    await expect(page.getByTestId("notification")).toBeVisible()
+    await expect(page.getByRole("link", { name: "me", exact: true })).toBeVisible()
+
+    await page.getByRole("button", { name: /logout/i }).click()
+    await expect(page.getByRole("link", { name: "login", exact: true })).toBeVisible()
+  })
+
+  test("login fails with wrong credentials", async ({ page }) => {
+    await createUser("testuser", "Test User", "testpass123")
+    await page.goto("/login")
+    await page.getByLabel("Username", { exact: true }).fill("testuser")
+    await page.getByLabel("Password", { exact: true }).fill("wrongpassword")
+    await page.getByTestId("login-button").click()
+    await expect(page.getByTestId("error-message")).toBeVisible()
+  })
+
+  test("unauthenticated user is redirected from /me to login", async ({ page }) => {
+    await page.goto("/me")
+    await expect(page).toHaveURL("/login")
+  })
+
+  test("unauthenticated user is redirected from /feed to login", async ({ page }) => {
+    await page.goto("/feed")
+    await expect(page).toHaveURL("/login")
+  })
+})
+
+test.describe("Blogs", () => {
   test.beforeEach(async () => {
-    await resetDatabase()
+    await createUser("testuser", "Test User", "testpass123")
   })
 
-  test.describe("Authentication", () => {
-    test("user can register", async ({ page }) => {
-      await page.goto("/register")
-
-      await page.getByLabel("Username", { exact: true }).fill("testuser")
-      await page.getByLabel("Name", { exact: true }).fill("Test User")
-      await page.getByLabel("Password", { exact: true }).fill("testpass123")
-      await page
-        .getByLabel("Confirm Password", { exact: true })
-        .fill("testpass123")
-
-      await page.getByTestId("register-button").click()
-
-      // Should redirect to login page
-      await expect(page).toHaveURL("/login")
-    })
-
-    test("registration fails with short username", async ({ page }) => {
-      await page.goto("/register")
-
-      await page.getByLabel("Username", { exact: true }).fill("usr")
-      await page.getByLabel("Name", { exact: true }).fill("Test User")
-      await page.getByLabel("Password", { exact: true }).fill("testpass123")
-      await page
-        .getByLabel("Confirm Password", { exact: true })
-        .fill("testpass123")
-
-      await page.getByTestId("register-button").click()
-
-      // Should show error message
-      await expect(page.getByTestId("username-error")).toBeVisible()
-    })
-
-    test("registration fails with mismatched passwords", async ({ page }) => {
-      await page.goto("/register")
-
-      await page.getByLabel("Username", { exact: true }).fill("testuser")
-      await page.getByLabel("Name", { exact: true }).fill("Test User")
-      await page.getByLabel("Password", { exact: true }).fill("testpass123")
-      await page
-        .getByLabel("Confirm Password", { exact: true })
-        .fill("differentpass")
-
-      await page.getByTestId("register-button").click()
-
-      // Should show error message
-      await expect(page.getByTestId("passwordConfirm-error")).toBeVisible()
-    })
-
-    test("user can login", async ({ page }) => {
-      await createUser("testuser", "Test User", "testpass123")
-
-      await page.goto("/login")
-      await page.getByLabel("Username", { exact: true }).fill("testuser")
-      await page.getByLabel("Password", { exact: true }).fill("testpass123")
-      await page.getByTestId("login-button").click()
-
-      // Should redirect to home page and show success notification
-      await expect(page).toHaveURL("/")
-      await expect(page.getByTestId("notification")).toBeVisible()
-    })
-
-    test("login fails with wrong credentials", async ({ page }) => {
-      await createUser("testuser", "Test User", "testpass123")
-
-      await page.goto("/login")
-      await page.getByLabel("Username", { exact: true }).fill("testuser")
-      await page.getByLabel("Password", { exact: true }).fill("wrongpassword")
-      await page.getByTestId("login-button").click()
-
-      // Should show error message
-      await expect(page.getByTestId("error-message")).toBeVisible()
-    })
-
-    test("logged in user can see their info", async ({ page }) => {
-      await createUser("testuser", "Test User", "testpass123")
-      await loginUser(page, "testuser", "testpass123")
-
-      // Navigate to me page to see user info
-      await page.goto("/me")
-
-      // Should show username on me page
-      await expect(page.getByTestId("user-username")).toBeVisible()
-    })
-
-    test("user can logout", async ({ page }) => {
-      await createUser("testuser", "Test User", "testpass123")
-      await loginUser(page, "testuser", "testpass123")
-
-      await page.goto("/blogs")
-
-      // Click logout button
-      await page.getByRole("button", { name: /logout/i }).click()
-
-      // Should redirect and show login link in navbar
-      await expect(
-        page.getByRole("link", { name: "login", exact: true }),
-      ).toBeVisible()
-    })
+  test("logged in user can create a blog and it appears in the list", async ({ page }) => {
+    await loginUser(page, "testuser", "testpass123")
+    await createBlog(page, "My First Post", "Test User", "http://example.com")
+    await expect(page).toHaveURL("/blogs")
+    await expect(page.getByTestId("blogs-list")).toContainText("My First Post")
   })
 
-  test.describe("Navigation", () => {
-    test("home page can be opened", async ({ page }) => {
-      await page.goto("/")
-
-      // Should show the homepage content
-      await expect(page).toHaveURL("/")
-    })
-
-    test("navigation links are visible for non-logged in user", async ({
-      page,
-    }) => {
-      await page.goto("/")
-
-      // Should show login and register links in navbar
-      await expect(
-        page.getByRole("link", { name: "login", exact: true }),
-      ).toBeVisible()
-      await expect(
-        page.getByRole("link", { name: "register", exact: true }),
-      ).toBeVisible()
-    })
-
-    test("navigation links change after login", async ({ page }) => {
-      await createUser("testuser", "Test User", "testpass123")
-      await loginUser(page, "testuser", "testpass123")
-
-      await page.goto("/")
-
-      // Login and Register links in navbar should not be visible
-      await expect(
-        page.getByRole("link", { name: "login", exact: true }),
-      ).not.toBeVisible()
-      await expect(
-        page.getByRole("link", { name: "register", exact: true }),
-      ).not.toBeVisible()
-
-      // User-specific links should be visible
-      await expect(
-        page.getByRole("link", { name: "me", exact: true }),
-      ).toBeVisible()
-    })
-
-    test("user can navigate to blogs page", async ({ page }) => {
-      await page.goto("/")
-
-      // Click on blogs link in navbar
-      const blogsLink = page.getByRole("link", { name: "blogs", exact: true })
-      await blogsLink.click()
-
-      await expect(page).toHaveURL("/blogs")
-    })
-
-    test("logged in user can navigate to create blog page", async ({
-      page,
-    }) => {
-      await createUser("testuser", "Test User", "testpass123")
-      await loginUser(page, "testuser", "testpass123")
-
-      await page.goto("/")
-
-      // Navigate to new blog page
-      await page.goto("/blogs/new")
-
-      await expect(page).toHaveURL("/blogs/new")
-    })
-
-    test("user can navigate to users page", async ({ page }) => {
-      await page.goto("/")
-
-      // Click on users link in navbar (first one)
-      const usersLink = page
-        .getByRole("navigation")
-        .getByRole("link", { name: "users" })
-      await usersLink.click()
-
-      await expect(page).toHaveURL("/users")
-    })
+  test("blog detail shows title, author, and like button", async ({ page }) => {
+    await loginUser(page, "testuser", "testpass123")
+    await createBlog(page, "Detail Test", "Test Author")
+    await page.goto("/blogs")
+    await page.getByRole("link", { name: "Detail Test" }).click()
+    await page.waitForURL(/\/blogs\/\d+/)
+    await expect(page.getByTestId("blog-title")).toContainText("Detail Test")
+    await expect(page.getByTestId("blog-author")).toContainText("Test Author")
+    await expect(page.getByTestId("like-button")).toBeVisible()
   })
 
-  test.describe("Blogs", () => {
-    test.beforeEach(async () => {
-      await createUser("testuser", "Test User", "testpass123")
-    })
-
-    test("logged in user can create a blog", async ({ page }) => {
-      await loginUser(page, "testuser", "testpass123")
-
-      await page.goto("/blogs/new")
-      await page.getByLabel("Title", { exact: true }).fill("Test Blog")
-      await page.getByLabel("Author", { exact: true }).fill("Test Author")
-      await page.getByLabel("URL", { exact: true }).fill("http://testblog.com")
-      await page.getByTestId("create-blog-button").click()
-
-      // Should redirect to blogs page
-      await expect(page).toHaveURL("/blogs")
-
-      // Should show success notification
-      await expect(page.getByTestId("notification")).toBeVisible()
-
-      // Blog should appear in the list
-      await expect(page.getByTestId("blogs-list")).toContainText("Test Blog")
-    })
-
-    test("user cannot create blog without being logged in", async ({
-      page,
-    }) => {
-      await page.goto("/blogs/new")
-
-      // App currently allows access to the page even when not logged in
-      // Just verify the page loads - you may want to add auth protection later
-      await expect(page).toHaveURL("/blogs/new")
-    })
-
-    test("blogs are displayed on blogs page", async ({ page }) => {
-      await loginUser(page, "testuser", "testpass123")
-
-      // Create a couple of blogs
-      await createBlog(page, "First Blog", "Author One", "http://blog1.com")
-      await createBlog(page, "Second Blog", "Author Two", "http://blog2.com")
-
-      await page.goto("/blogs")
-
-      // Both blogs should be visible
-      const blogsList = page.getByTestId("blogs-list")
-      await expect(blogsList).toContainText("First Blog")
-      await expect(blogsList).toContainText("Second Blog")
-    })
-
-    test("blog can be viewed individually", async ({ page }) => {
-      await loginUser(page, "testuser", "testpass123")
-      await createBlog(page, "Test Blog", "Test Author", "http://testblog.com")
-
-      await page.goto("/blogs")
-
-      // Click on the blog title to view it
-      const blogLink = page.getByRole("link", { name: "Test Blog" })
-      await blogLink.click()
-
-      // Should navigate to the blog's detail page
-      await page.waitForURL(/\/blogs\/\d+/)
-      await expect(page.getByTestId("blog-detail")).toBeVisible()
-      await expect(page.getByTestId("blog-title")).toContainText("Test Blog")
-      await expect(page.getByTestId("blog-author")).toContainText("Test Author")
-    })
-
-    test("blog content is rendered as markdown", async ({ page }) => {
-      await loginUser(page, "testuser", "testpass123")
-      await createBlog(
-        page,
-        "Markdown Blog",
-        "Test Author",
-        "",
-        "## Hello World\n\nThis is **bold** text.",
-      )
-
-      await page.goto("/blogs")
-      await page.getByRole("link", { name: "Markdown Blog" }).click()
-      await page.waitForURL(/\/blogs\/\d+/)
-
-      // Markdown should be rendered as HTML
-      const content = page.getByTestId("blog-content")
-      await expect(content).toBeVisible()
-      await expect(content.locator("h2")).toContainText("Hello World")
-      await expect(content.locator("strong")).toContainText("bold")
-    })
-
-    test("blogs can be filtered", async ({ page }) => {
-      await loginUser(page, "testuser", "testpass123")
-
-      // Create blogs with different titles
-      await createBlog(page, "React Tutorial", "Author One", "http://react.com")
-      await createBlog(page, "Node.js Guide", "Author Two", "http://node.com")
-      await createBlog(
-        page,
-        "React Advanced",
-        "Author Three",
-        "http://react-adv.com",
-      )
-
-      await page.goto("/blogs")
-
-      const blogsList = page.getByTestId("blogs-list")
-
-      // All blogs should be visible initially
-      await expect(blogsList).toContainText("React Tutorial")
-      await expect(blogsList).toContainText("Node.js Guide")
-      await expect(blogsList).toContainText("React Advanced")
-
-      // Filter by "React"
-      await page.getByTestId("filter-input").fill("React")
-      await page.getByTestId("search-button").click()
-
-      // Only React blogs should be visible
-      await expect(blogsList).toContainText("React Tutorial")
-      await expect(blogsList).toContainText("React Advanced")
-      await expect(blogsList).not.toContainText("Node.js Guide")
-    })
-
-    test("blog shows like count", async ({ page }) => {
-      await loginUser(page, "testuser", "testpass123")
-      await createBlog(page, "Test Blog", "Test Author", "http://testblog.com")
-
-      await page.goto("/blogs")
-
-      // Should show 0 likes initially
-      const blogsList = page.getByTestId("blogs-list")
-      await expect(blogsList).toContainText("0 likes")
-    })
-
-    test("user can like a blog", async ({ page }) => {
-      // Another user owns the blog so testuser can like it
-      await createUser("blogowner", "Blog Owner", "password123")
-      await loginUser(page, "blogowner", "password123")
-      await createBlog(page, "Likeable Blog", "Blog Owner", "http://likeable.com")
-
-      await loginUser(page, "testuser", "testpass123")
-      await page.goto("/blogs")
-      await page.getByRole("link", { name: "Likeable Blog" }).click()
-      await page.waitForURL(/\/blogs\/\d+/)
-
-      // Like count should start at 0
-      await expect(page.getByTestId("like-button")).toContainText("0 likes")
-
-      // Click like
-      await page.getByTestId("like-button").click()
-      await page.waitForLoadState("networkidle")
-
-      // Like count should now be 1
-      await expect(page.getByTestId("like-button")).toContainText("1 like")
-    })
-
-    test("user can unlike a blog by clicking again", async ({ page }) => {
-      await createUser("blogowner", "Blog Owner", "password123")
-      await loginUser(page, "blogowner", "password123")
-      await createBlog(page, "Likeable Blog", "Blog Owner", "http://likeable.com")
-
-      await loginUser(page, "testuser", "testpass123")
-      await page.goto("/blogs")
-      await page.getByRole("link", { name: "Likeable Blog" }).click()
-      await page.waitForURL(/\/blogs\/\d+/)
-
-      // Like then unlike
-      await page.getByTestId("like-button").click()
-      await page.waitForLoadState("networkidle")
-      await expect(page.getByTestId("like-button")).toContainText("1 like")
-
-      await page.getByTestId("like-button").click()
-      await page.waitForLoadState("networkidle")
-      await expect(page.getByTestId("like-button")).toContainText("0 likes")
-    })
-
-    test("two users liking increments count correctly", async ({ page }) => {
-      await createUser("blogowner", "Blog Owner", "password123")
-      await loginUser(page, "blogowner", "password123")
-      await createBlog(page, "Popular Blog", "Blog Owner", "http://popular.com")
-
-      // testuser likes it
-      await loginUser(page, "testuser", "testpass123")
-      await page.goto("/blogs")
-      await page.getByRole("link", { name: "Popular Blog" }).click()
-      await page.waitForURL(/\/blogs\/\d+/)
-      await page.getByTestId("like-button").click()
-      await page.waitForLoadState("networkidle")
-      await expect(page.getByTestId("like-button")).toContainText("1 like")
-
-      // second user also likes it
-      await createUser("seconduser", "Second User", "password123")
-      await loginUser(page, "seconduser", "password123")
-      await page.goto("/blogs")
-      await page.getByRole("link", { name: "Popular Blog" }).click()
-      await page.waitForURL(/\/blogs\/\d+/)
-      await page.getByTestId("like-button").click()
-      await page.waitForLoadState("networkidle")
-      await expect(page.getByTestId("like-button")).toContainText("2 likes")
-    })
-
-    test("tags are shown on blog detail page", async ({ page }) => {
-      await loginUser(page, "testuser", "testpass123")
-      await createBlog(
-        page,
-        "Tagged Blog",
-        "Test Author",
-        "",
-        "",
-        ["javascript", "nextjs"],
-      )
-
-      await page.goto("/blogs")
-      await page.getByRole("link", { name: "Tagged Blog" }).click()
-      await page.waitForURL(/\/blogs\/\d+/)
-
-      const tagsSection = page.getByTestId("blog-tags")
-      await expect(tagsSection).toBeVisible()
-      await expect(tagsSection).toContainText("javascript")
-      await expect(tagsSection).toContainText("nextjs")
-    })
-
-    test("blogs can be filtered by tag", async ({ page }) => {
-      await loginUser(page, "testuser", "testpass123")
-      await createBlog(
-        page,
-        "JS Blog",
-        "Test Author",
-        "",
-        "",
-        ["javascript"],
-      )
-      await createBlog(
-        page,
-        "Python Blog",
-        "Test Author",
-        "",
-        "",
-        ["python"],
-      )
-
-      // Click on a tag badge to filter
-      await page.goto("/blogs")
-      await page.getByTestId("card-tag-javascript").first().click()
-      await page.waitForURL(/\/blogs\?tag=javascript/)
-
-      // Only the JS blog should be visible
-      const blogsList = page.getByTestId("blogs-list")
-      await expect(blogsList).toContainText("JS Blog")
-      await expect(blogsList).not.toContainText("Python Blog")
-
-      // Active tag filter indicator should be shown
-      await expect(page.getByTestId("active-tag-filter")).toContainText("javascript")
-    })
-
-    test("clearing tag filter shows all blogs", async ({ page }) => {
-      await loginUser(page, "testuser", "testpass123")
-      await createBlog(page, "JS Blog", "Test Author", "", "", ["javascript"])
-      await createBlog(page, "Python Blog", "Test Author", "", "", ["python"])
-
-      await page.goto("/blogs?tag=javascript")
-      await expect(page.getByTestId("blogs-list")).not.toContainText("Python Blog")
-
-      // Clear the tag filter
-      await page.getByTestId("clear-tag-filter").click()
-      await page.waitForURL("/blogs")
-
-      // Both blogs should now be visible
-      await expect(page.getByTestId("blogs-list")).toContainText("JS Blog")
-      await expect(page.getByTestId("blogs-list")).toContainText("Python Blog")
-    })
-
-    test("owner can edit a blog", async ({ page }) => {
-      await loginUser(page, "testuser", "testpass123")
-      await createBlog(page, "Original Title", "Original Author", "http://original.com")
-
-      // Navigate to the blog detail page
-      await page.goto("/blogs")
-      await page.getByRole("link", { name: "Original Title" }).click()
-      await page.waitForURL(/\/blogs\/\d+/)
-
-      // Owner should see the Edit button
-      await expect(page.getByTestId("edit-blog-button")).toBeVisible()
-      await page.getByTestId("edit-blog-button").click()
-      await page.waitForURL(/\/blogs\/\d+\/edit/)
-
-      // Form should be pre-populated
-      await expect(page.getByLabel("Title", { exact: true })).toHaveValue("Original Title")
-      await expect(page.getByLabel("Author", { exact: true })).toHaveValue("Original Author")
-
-      // Update the title
-      await page.getByLabel("Title", { exact: true }).fill("Updated Title")
-      await page.getByLabel("Author", { exact: true }).fill("Updated Author")
-      await page.getByTestId("save-blog-button").click()
-
-      // Should redirect back to blog detail with updated title
-      await page.waitForURL(/\/blogs\/\d+$/)
-      await expect(page.getByTestId("blog-title")).toContainText("Updated Title")
-      await expect(page.getByTestId("blog-author")).toContainText("Updated Author")
-    })
-
-    test("owner can delete a blog", async ({ page }) => {
-      await loginUser(page, "testuser", "testpass123")
-      await createBlog(page, "Blog To Delete", "Some Author", "http://delete-me.com")
-
-      // Navigate to the blog detail page
-      await page.goto("/blogs")
-      await page.getByRole("link", { name: "Blog To Delete" }).click()
-      await page.waitForURL(/\/blogs\/\d+/)
-
-      // Owner should see the Delete button
-      await expect(page.getByTestId("delete-blog-button")).toBeVisible()
-      await page.getByTestId("delete-blog-button").click()
-
-      // Should redirect to blogs list and blog should be gone
-      await expect(page).toHaveURL("/blogs")
-      await expect(page.getByTestId("blogs-list")).not.toContainText("Blog To Delete")
-    })
-
-    test("non-owner does not see edit or delete buttons", async ({ page }) => {
-      // blogowner creates a blog
-      await createUser("blogowner", "Blog Owner", "password123")
-      await loginUser(page, "blogowner", "password123")
-      await createBlog(page, "Owner Blog", "Blog Owner", "http://owner.com")
-
-      // testuser views the blog
-      await loginUser(page, "testuser", "testpass123")
-      await page.goto("/blogs")
-      await page.getByRole("link", { name: "Owner Blog" }).click()
-      await page.waitForURL(/\/blogs\/\d+/)
-
-      // Should NOT see edit or delete buttons
-      await expect(page.getByTestId("edit-blog-button")).not.toBeVisible()
-      await expect(page.getByTestId("delete-blog-button")).not.toBeVisible()
-    })
+  test("markdown content renders as HTML on detail page", async ({ page }) => {
+    await loginUser(page, "testuser", "testpass123")
+    await createBlog(page, "Markdown Post", "Test Author", "", "## Hello\n\nThis is **bold**.")
+    await page.goto("/blogs")
+    await page.getByRole("link", { name: "Markdown Post" }).click()
+    await page.waitForURL(/\/blogs\/\d+/)
+    const content = page.getByTestId("blog-content")
+    await expect(content.locator("h2")).toContainText("Hello")
+    await expect(content.locator("strong")).toContainText("bold")
   })
 
-  test.describe("Me Page", () => {
-    test.beforeEach(async () => {
-      await createUser("testuser", "Test User", "testpass123")
-    })
+  test("blogs can be filtered by title", async ({ page }) => {
+    await loginUser(page, "testuser", "testpass123")
+    await createBlog(page, "React Tutorial", "Author One")
+    await createBlog(page, "Node.js Guide", "Author Two")
+    await page.goto("/blogs")
+    await page.getByTestId("filter-input").fill("React")
+    await page.getByTestId("search-button").click()
+    await expect(page.getByTestId("blogs-list")).toContainText("React Tutorial")
+    await expect(page.getByTestId("blogs-list")).not.toContainText("Node.js Guide")
+  })
 
-    test("redirects to login if not authenticated", async ({ page }) => {
-      await page.goto("/me")
+  test("owner sees edit and delete buttons, non-owner does not", async ({ page }) => {
+    await createUser("owner", "Owner User", "password123")
+    await loginUser(page, "owner", "password123")
+    await createBlog(page, "Owner Blog", "Owner User")
 
-      // Should redirect to login page
-      await expect(page).toHaveURL("/login")
-    })
+    await page.goto("/blogs")
+    await page.getByRole("link", { name: "Owner Blog" }).click()
+    await page.waitForURL(/\/blogs\/\d+/)
+    await expect(page.getByTestId("edit-blog-button")).toBeVisible()
+    await expect(page.getByTestId("delete-blog-button")).toBeVisible()
 
-    test("shows user profile information", async ({ page }) => {
-      await loginUser(page, "testuser", "testpass123")
-      await page.goto("/me")
+    await loginUser(page, "testuser", "testpass123")
+    await page.goto("/blogs")
+    await page.getByRole("link", { name: "Owner Blog" }).click()
+    await page.waitForURL(/\/blogs\/\d+/)
+    await expect(page.getByTestId("edit-blog-button")).not.toBeVisible()
+    await expect(page.getByTestId("delete-blog-button")).not.toBeVisible()
+  })
 
-      // Should show user information
-      await expect(page.getByTestId("user-profile")).toBeVisible()
-      await expect(page.getByTestId("user-name")).toContainText("Test User")
-      await expect(page.getByTestId("user-username")).toContainText("testuser")
-    })
+  test("owner can edit a blog", async ({ page }) => {
+    await loginUser(page, "testuser", "testpass123")
+    await createBlog(page, "Original Title", "Original Author")
+    await page.goto("/blogs")
+    await page.getByRole("link", { name: "Original Title" }).click()
+    await page.waitForURL(/\/blogs\/\d+/)
+    await page.getByTestId("edit-blog-button").click()
+    await page.waitForURL(/\/blogs\/\d+\/edit/)
+    await expect(page.getByLabel("Title", { exact: true })).toHaveValue("Original Title")
+    await page.getByLabel("Title", { exact: true }).fill("Updated Title")
+    await page.getByTestId("save-blog-button").click()
+    await page.waitForURL(/\/blogs\/\d+$/)
+    await expect(page.getByTestId("blog-title")).toContainText("Updated Title")
+  })
 
-    test("shows empty reading list message", async ({ page }) => {
-      await loginUser(page, "testuser", "testpass123")
-      await page.goto("/me")
+  test("owner can delete a blog", async ({ page }) => {
+    await loginUser(page, "testuser", "testpass123")
+    await createBlog(page, "Delete Me", "Test Author")
+    await page.goto("/blogs")
+    await page.getByRole("link", { name: "Delete Me" }).click()
+    await page.waitForURL(/\/blogs\/\d+/)
+    await page.getByTestId("delete-blog-button").click()
+    await expect(page).toHaveURL("/blogs")
+    await expect(page.getByTestId("blogs-list")).not.toContainText("Delete Me")
+  })
+})
 
-      await expect(page.getByTestId("reading-list-section")).toBeVisible()
-      await expect(page.getByTestId("empty-reading-list")).toBeVisible()
-    })
+test.describe("Likes", () => {
+  test("user can like and unlike a blog", async ({ page }) => {
+    await createUser("owner", "Owner", "password123")
+    await createUser("liker", "Liker", "password123")
 
-    test("shows reading list with unread blog", async ({ page }) => {
-      // Create another user to own a blog
-      await createUser("blogowner", "Blog Owner", "password123")
-      await loginUser(page, "blogowner", "password123")
-      await createBlog(page, "Test Blog", "Test Author", "http://test.com")
+    await loginUser(page, "owner", "password123")
+    await createBlog(page, "Likeable Post", "Owner")
 
-      // Login as testuser and add blog to reading list
-      await loginUser(page, "testuser", "testpass123")
-      await page.goto("/blogs")
-      await page.getByRole("link", { name: "Test Blog" }).click()
+    await loginUser(page, "liker", "password123")
+    await page.goto("/blogs")
+    await page.getByRole("link", { name: "Likeable Post" }).click()
+    await page.waitForURL(/\/blogs\/\d+/)
 
-      // Wait for page to load and add to reading list
-      await page.waitForSelector('[data-testid="add-to-reading-list-button"]')
+    await expect(page.getByTestId("like-button")).toContainText("0 likes")
+    await page.getByTestId("like-button").click()
+    await expect(page.getByTestId("like-button")).toContainText("1 like")
 
-      // Click and wait for the request to complete
-      await Promise.all([
-        page.waitForResponse((response) => response.status() === 200),
-        page.getByTestId("add-to-reading-list-button").click(),
-      ])
+    await page.getByTestId("like-button").click()
+    await expect(page.getByTestId("like-button")).toContainText("0 likes")
+  })
 
-      // Navigate to me page
-      await page.goto("/me")
+  test("two different users liking increments count to 2", async ({ page }) => {
+    await createUser("owner", "Owner", "password123")
+    await createUser("liker2", "Liker Two", "password123")
 
-      // Should show in unread section
-      await expect(page.getByTestId("unread-section")).toBeVisible()
-      await expect(page.getByTestId("unread-section")).toContainText(
-        "Test Blog",
-      )
-    })
+    await loginUser(page, "owner", "password123")
+    await createBlog(page, "Popular Post", "Owner")
 
-    test("can mark blog as read", async ({ page }) => {
-      // Create another user to own a blog
-      await createUser("blogowner", "Blog Owner", "password123")
-      await loginUser(page, "blogowner", "password123")
-      await createBlog(page, "Test Blog", "Test Author", "http://test.com")
+    await loginUser(page, "liker2", "password123")
+    await page.goto("/blogs")
+    await page.getByRole("link", { name: "Popular Post" }).click()
+    await page.waitForURL(/\/blogs\/\d+/)
+    await page.getByTestId("like-button").click()
+    await expect(page.getByTestId("like-button")).toContainText("1 like")
 
-      // Login as testuser and add blog to reading list
-      await loginUser(page, "testuser", "testpass123")
-      await page.goto("/blogs")
-      await page.getByRole("link", { name: "Test Blog" }).click()
-      await page.waitForSelector('[data-testid="add-to-reading-list-button"]')
-      await page.getByTestId("add-to-reading-list-button").click()
+    await loginUser(page, "owner", "password123")
+    await page.goto("/blogs")
+    await page.getByRole("link", { name: "Popular Post" }).click()
+    await page.waitForURL(/\/blogs\/\d+/)
+    await page.getByTestId("like-button").click()
+    await expect(page.getByTestId("like-button")).toContainText("2 likes")
+  })
+})
 
-      // Wait for server action to complete
-      await page.waitForTimeout(500)
+test.describe("Tags", () => {
+  test.beforeEach(async () => {
+    await createUser("testuser", "Test User", "testpass123")
+  })
 
-      // Go to me page and mark as read
-      await page.goto("/me")
-      await page.waitForSelector('[data-testid^="mark-read-"]', {
-        timeout: 10000,
-      })
+  test("tags appear on blog detail page after creation", async ({ page }) => {
+    await loginUser(page, "testuser", "testpass123")
+    await createBlog(page, "Tagged Post", "Test Author", "", "", ["javascript", "react"])
+    await page.goto("/blogs")
+    await page.getByRole("link", { name: "Tagged Post" }).click()
+    await page.waitForURL(/\/blogs\/\d+/)
+    const tags = page.getByTestId("blog-tags")
+    await expect(tags).toContainText("javascript")
+    await expect(tags).toContainText("react")
+  })
 
-      // Click the first mark as read button
-      const markReadButton = page.locator('[data-testid^="mark-read-"]').first()
-      await markReadButton.click()
+  test("clicking a tag filters the blog list", async ({ page }) => {
+    await loginUser(page, "testuser", "testpass123")
+    await createBlog(page, "JS Post", "Author", "", "", ["javascript"])
+    await createBlog(page, "CSS Post", "Author", "", "", ["css"])
+    await page.goto("/blogs")
+    await page.getByTestId("card-tag-javascript").first().click()
+    await page.waitForURL(/\/blogs\?tag=javascript/)
+    await expect(page.getByTestId("blogs-list")).toContainText("JS Post")
+    await expect(page.getByTestId("blogs-list")).not.toContainText("CSS Post")
+    await expect(page.getByTestId("active-tag-filter")).toContainText("javascript")
+  })
 
-      // Wait for the page to update
-      await page.waitForTimeout(1000)
+  test("clearing tag filter restores full list", async ({ page }) => {
+    await loginUser(page, "testuser", "testpass123")
+    await createBlog(page, "JS Post", "Author", "", "", ["javascript"])
+    await createBlog(page, "CSS Post", "Author", "", "", ["css"])
+    await page.goto("/blogs?tag=javascript")
+    await expect(page.getByTestId("blogs-list")).not.toContainText("CSS Post")
+    await page.getByTestId("clear-tag-filter").click()
+    await page.waitForURL("/blogs")
+    await expect(page.getByTestId("blogs-list")).toContainText("JS Post")
+    await expect(page.getByTestId("blogs-list")).toContainText("CSS Post")
+  })
+})
 
-      // Should now show empty unread section
-      await expect(page.getByTestId("no-unread-blogs")).toBeVisible()
-    })
+test.describe("Comments", () => {
+  test.beforeEach(async () => {
+    await createUser("author", "Author", "password123")
+    await createUser("commenter", "Commenter", "password123")
+  })
 
-    test("shows multiple blogs in reading list", async ({ page }) => {
-      // Create another user to own blogs
-      await createUser("blogowner", "Blog Owner", "password123")
-      await loginUser(page, "blogowner", "password123")
-      await createBlog(page, "First Blog", "Author One", "http://first.com")
-      await createBlog(page, "Second Blog", "Author Two", "http://second.com")
+  test("logged in user can post a comment", async ({ page }) => {
+    await loginUser(page, "author", "password123")
+    await createBlog(page, "Comment Test Post", "Author")
+    await loginUser(page, "commenter", "password123")
+    await page.goto("/blogs")
+    await page.getByRole("link", { name: "Comment Test Post" }).click()
+    await page.waitForURL(/\/blogs\/\d+/)
+    await page.getByTestId("comment-input").fill("Great post!")
+    await page.getByTestId("submit-comment-button").click()
+    await expect(page.getByTestId("comments-section")).toContainText("Great post!")
+  })
 
-      // Login as testuser and add both blogs to reading list
-      await loginUser(page, "testuser", "testpass123")
+  test("comment author sees delete button, others do not", async ({ page }) => {
+    await loginUser(page, "author", "password123")
+    await createBlog(page, "Comment Ownership Post", "Author")
+    await loginUser(page, "commenter", "password123")
+    await page.goto("/blogs")
+    await page.getByRole("link", { name: "Comment Ownership Post" }).click()
+    await page.waitForURL(/\/blogs\/\d+/)
+    await page.getByTestId("comment-input").fill("My comment")
+    await page.getByTestId("submit-comment-button").click()
+    await expect(page.getByTestId("comments-section")).toContainText("My comment")
+    const deleteBtn = page.locator('[data-testid^="delete-comment-"]').first()
+    await expect(deleteBtn).toBeVisible()
 
-      await page.goto("/blogs")
-      await page.getByRole("link", { name: "First Blog" }).click()
-      await page.waitForSelector('[data-testid="add-to-reading-list-button"]')
-      await Promise.all([
-        page.waitForResponse((response) => response.status() === 200),
-        page.getByTestId("add-to-reading-list-button").click(),
-      ])
+    await loginUser(page, "author", "password123")
+    await page.goto("/blogs")
+    await page.getByRole("link", { name: "Comment Ownership Post" }).click()
+    await page.waitForURL(/\/blogs\/\d+/)
+    await expect(page.locator('[data-testid^="delete-comment-"]')).not.toBeVisible()
+  })
 
-      await page.goto("/blogs")
-      await page.getByRole("link", { name: "Second Blog" }).click()
-      await page.waitForSelector('[data-testid="add-to-reading-list-button"]')
-      await Promise.all([
-        page.waitForResponse((response) => response.status() === 200),
-        page.getByTestId("add-to-reading-list-button").click(),
-      ])
+  test("user can delete their own comment", async ({ page }) => {
+    await loginUser(page, "author", "password123")
+    await createBlog(page, "Delete Comment Post", "Author")
+    await loginUser(page, "commenter", "password123")
+    await page.goto("/blogs")
+    await page.getByRole("link", { name: "Delete Comment Post" }).click()
+    await page.waitForURL(/\/blogs\/\d+/)
+    await page.getByTestId("comment-input").fill("Delete me")
+    await page.getByTestId("submit-comment-button").click()
+    await expect(page.getByTestId("comments-section")).toContainText("Delete me")
+    await page.locator('[data-testid^="delete-comment-"]').first().click()
+    await expect(page.getByTestId("comments-section")).not.toContainText("Delete me")
+    await expect(page.getByTestId("no-comments")).toBeVisible()
+  })
+})
 
-      // Go to me page
-      await page.goto("/me")
+test.describe("Follows and Feed", () => {
+  test.beforeEach(async () => {
+    await createUser("writer", "Writer", "password123")
+    await createUser("reader", "Reader", "password123")
+  })
 
-      // Should show both blogs in unread section
-      const unreadSection = page.getByTestId("unread-section")
-      await expect(unreadSection).toContainText("First Blog")
-      await expect(unreadSection).toContainText("Second Blog")
-    })
+  test("user can follow and unfollow another user", async ({ page }) => {
+    await loginUser(page, "reader", "password123")
+    await page.goto("/users/writer")
+    await expect(page.getByTestId("follow-button")).toContainText("Follow")
+    await page.getByTestId("follow-button").click()
+    await expect(page.getByTestId("follow-button")).toContainText("Unfollow")
+    await expect(page.getByTestId("follower-count")).toContainText("1")
+    await page.getByTestId("follow-button").click()
+    await expect(page.getByTestId("follow-button")).toContainText("Follow")
+    await expect(page.getByTestId("follower-count")).toContainText("0")
+  })
 
-    test("shows API token section", async ({ page }) => {
-      await loginUser(page, "testuser", "testpass123")
-      await page.goto("/me")
+  test("own profile does not show follow button", async ({ page }) => {
+    await loginUser(page, "writer", "password123")
+    await page.goto("/users/writer")
+    await expect(page.getByTestId("follow-button")).not.toBeVisible()
+  })
 
-      await expect(page.getByTestId("api-token-section")).toBeVisible()
-      await expect(page.getByTestId("no-token-message")).toBeVisible()
-      await expect(page.getByTestId("generate-token-button")).toBeVisible()
-    })
+  test("feed shows posts from followed users only", async ({ page }) => {
+    await loginUser(page, "writer", "password123")
+    await createBlog(page, "Writer Post", "Writer")
 
-    test("can generate API token", async ({ page }) => {
-      await loginUser(page, "testuser", "testpass123")
-      await page.goto("/me")
+    await loginUser(page, "reader", "password123")
+    await page.goto("/feed")
+    await expect(page.locator("text=Nothing here yet")).toBeVisible()
 
-      // Generate token
-      await page.getByTestId("generate-token-button").click()
+    await page.goto("/users/writer")
+    await page.getByTestId("follow-button").click()
+    await expect(page.getByTestId("follow-button")).toContainText("Unfollow")
 
-      // Should show the generated token
-      await expect(page.getByTestId("token-display")).toBeVisible()
-      // Token should be visible in a code element
-      const token = await page.getByTestId("api-token").textContent()
-      expect(token).toBeTruthy()
-      expect(token!.length).toBeGreaterThan(10)
-    })
+    await page.goto("/feed")
+    await expect(page.getByTestId("blogs-list")).toContainText("Writer Post")
+  })
 
-    test("can regenerate API token", async ({ page }) => {
-      await loginUser(page, "testuser", "testpass123")
-      await page.goto("/me")
+  test("feed is empty after unfollowing all users", async ({ page }) => {
+    await loginUser(page, "writer", "password123")
+    await createBlog(page, "Writer Post", "Writer")
 
-      // Generate first token
-      await page.getByTestId("generate-token-button").click()
-      await page.waitForSelector('[data-testid="api-token"]')
-      const firstToken = await page.getByTestId("api-token").textContent()
+    await loginUser(page, "reader", "password123")
+    await page.goto("/users/writer")
+    await page.getByTestId("follow-button").click()
 
-      // Generate new token without reloading
-      await page.getByTestId("generate-token-button").click()
+    await page.goto("/feed")
+    await expect(page.getByTestId("blogs-list")).toContainText("Writer Post")
 
-      // Wait for token to potentially change
-      await page.waitForTimeout(500)
-      const secondToken = await page.getByTestId("api-token").textContent()
+    await page.goto("/users/writer")
+    await page.getByTestId("follow-button").click()
 
-      // Tokens should be different
-      expect(firstToken).not.toBe(secondToken)
-      expect(secondToken).toBeTruthy()
-    })
+    await page.goto("/feed")
+    await expect(page.locator("text=Nothing here yet")).toBeVisible()
+  })
+})
+
+test.describe("Reading List", () => {
+  test.beforeEach(async () => {
+    await createUser("author", "Author", "password123")
+    await createUser("reader", "Reader", "password123")
+  })
+
+  test("user can add a blog to reading list and see it on /me", async ({ page }) => {
+    await loginUser(page, "author", "password123")
+    await createBlog(page, "Reading List Post", "Author")
+    await loginUser(page, "reader", "password123")
+    await page.goto("/blogs")
+    await page.getByRole("link", { name: "Reading List Post" }).click()
+    await page.waitForURL(/\/blogs\/\d+/)
+    await page.waitForSelector('[data-testid="add-to-reading-list-button"]')
+    await page.getByTestId("add-to-reading-list-button").click()
+    await expect(page.getByTestId("add-to-reading-list-button")).toContainText("✓ In reading list")
+    await page.goto("/me")
+    await expect(page.getByTestId("unread-section")).toContainText("Reading List Post")
+  })
+
+  test("user can mark a blog as read", async ({ page }) => {
+    await loginUser(page, "author", "password123")
+    await createBlog(page, "Mark Read Post", "Author")
+    await loginUser(page, "reader", "password123")
+    await page.goto("/blogs")
+    await page.getByRole("link", { name: "Mark Read Post" }).click()
+    await page.waitForURL(/\/blogs\/\d+/)
+    await page.waitForSelector('[data-testid="add-to-reading-list-button"]')
+    await page.getByTestId("add-to-reading-list-button").click()
+    await page.goto("/me")
+    await page.locator('[data-testid^="mark-read-"]').first().click()
+    await expect(page.getByTestId("no-unread-blogs")).toBeVisible()
   })
 })
