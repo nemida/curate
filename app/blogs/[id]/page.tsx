@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { getBlogById } from "../../services/blogs";
-import { toggleLikeAction, deleteBlogAction } from "@/app/actions/blogs";
+import { deleteBlogAction } from "@/app/actions/blogs";
 import { addToReadingListAction } from "@/app/actions/readingList";
 import { getCurrentUser } from "@/app/services/session";
 import { isInReadingList } from "@/app/services/readingList";
@@ -11,6 +11,7 @@ import Link from "next/link";
 import ReactMarkdown from "react-markdown";
 import rehypeSanitize from "rehype-sanitize";
 import CommentsSection from "./CommentsSection";
+import LikeButton from "./LikeButton";
 
 const BlogPage = async ({ params }: { params: Promise<{ id: string }> }) => {
   const { id } = await params;
@@ -80,17 +81,11 @@ const BlogPage = async ({ params }: { params: Promise<{ id: string }> }) => {
         )}
 
         <CardFooter className="gap-3 flex-wrap">
-          <form action={toggleLikeAction}>
-            <input type="hidden" name="id" value={blog.id} />
-            <Button
-              data-testid="like-button"
-              type="submit"
-              variant={userHasLiked ? "default" : "outline"}
-              size="sm"
-            >
-              ♥ {likeCount} {likeCount === 1 ? "like" : "likes"}
-            </Button>
-          </form>
+          <LikeButton
+            blogId={blog.id}
+            initialCount={likeCount}
+            initialLiked={userHasLiked}
+          />
           {url && (
             <a href={url} target="_blank" rel="noreferrer" className={cn(buttonVariants({ size: "sm" }))}>
               Visit source

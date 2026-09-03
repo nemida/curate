@@ -18,7 +18,7 @@ const Profile = async () => {
   const read = readingList.filter((e) => e.read);
 
   return (
-    <div className="flex flex-col gap-8 max-w-2xl">
+    <div className="flex flex-col gap-8 max-w-2xl mx-auto">
       <Card data-testid="user-profile" className="w-full">
         <CardHeader>
           <CardTitle>My Profile</CardTitle>

@@ -55,7 +55,6 @@ export const toggleLikeAction = async (formData: FormData) => {
   const id = Number(formData.get("id"));
   await toggleLike(currentUser.id, id);
   revalidatePath(`/blogs/${id}`);
-  revalidatePath("/blogs");
 };
 
 export const editBlog = async (
