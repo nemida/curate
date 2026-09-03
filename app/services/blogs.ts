@@ -1,5 +1,5 @@
 import { db } from "@/db";
-import { blogs, blogLikes, blogTags, tags } from "@/db/schema";
+import { blogs, blogLikes, blogTags, tags, readingList, comments } from "@/db/schema";
 import { eq, ilike, and, count, inArray } from "drizzle-orm";
 import { getCurrentUser } from "./session";
 
@@ -112,5 +112,9 @@ export const updateBlog = async (id: number, title: string, author: string, url:
 }
 
 export const deleteBlog = async (id: number) => {
+  await db.delete(comments).where(eq(comments.blogId, id));
+  await db.delete(blogLikes).where(eq(blogLikes.blogId, id));
+  await db.delete(blogTags).where(eq(blogTags.blogId, id));
+  await db.delete(readingList).where(eq(readingList.blogId, id));
   await db.delete(blogs).where(eq(blogs.id, id));
 }

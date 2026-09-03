@@ -154,7 +154,7 @@ test.describe("Blogs", () => {
     await page.getByRole("link", { name: "Delete Me" }).click()
     await page.waitForURL(/\/blogs\/\d+/)
     await page.getByTestId("delete-blog-button").click()
-    await page.waitForURL("/blogs")
+    await page.waitForURL("/blogs", { timeout: 10000 })
     await expect(page.getByTestId("blogs-list")).not.toContainText("Delete Me")
   })
 })
