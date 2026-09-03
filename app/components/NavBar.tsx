@@ -32,6 +32,9 @@ export default function NavBar() {
             <Link href="/me" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
               me
             </Link>
+            <Link href="/feed" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+              feed
+            </Link>
             <Link href="/blogs/new" className={cn(buttonVariants({ size: "sm" }))}>
               + New
             </Link>
