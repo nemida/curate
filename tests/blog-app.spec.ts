@@ -154,7 +154,7 @@ test.describe("Blogs", () => {
     await page.getByRole("link", { name: "Delete Me" }).click()
     await page.waitForURL(/\/blogs\/\d+/)
     await page.getByTestId("delete-blog-button").click()
-    await expect(page).toHaveURL("/blogs")
+    await page.waitForURL("/blogs")
     await expect(page.getByTestId("blogs-list")).not.toContainText("Delete Me")
   })
 })
@@ -345,12 +345,14 @@ test.describe("Follows and Feed", () => {
     await loginUser(page, "reader", "password123")
     await page.goto("/users/writer")
     await page.getByTestId("follow-button").click()
+    await expect(page.getByTestId("follow-button")).toContainText("Unfollow")
 
     await page.goto("/feed")
     await expect(page.getByTestId("blogs-list")).toContainText("Writer Post")
 
     await page.goto("/users/writer")
     await page.getByTestId("follow-button").click()
+    await expect(page.getByTestId("follow-button")).toContainText("Follow")
 
     await page.goto("/feed")
     await expect(page.locator("text=Nothing here yet")).toBeVisible()
@@ -386,7 +388,9 @@ test.describe("Reading List", () => {
     await page.waitForURL(/\/blogs\/\d+/)
     await page.waitForSelector('[data-testid="add-to-reading-list-button"]')
     await page.getByTestId("add-to-reading-list-button").click()
+    await expect(page.getByTestId("add-to-reading-list-button")).toContainText("✓ In reading list")
     await page.goto("/me")
+    await page.waitForSelector('[data-testid^="mark-read-"]')
     await page.locator('[data-testid^="mark-read-"]').first().click()
     await expect(page.getByTestId("no-unread-blogs")).toBeVisible()
   })

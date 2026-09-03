@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { db } from "@/db";
-import { users, blogs, readingList, blogLikes, blogTags, comments, follows, tags } from "@/db/schema";
+import { sql } from "drizzle-orm";
 
 export const DELETE = async () => {
   if (process.env.NODE_ENV === "production") {
@@ -11,15 +11,18 @@ export const DELETE = async () => {
   }
 
   try {
-    await db.delete(comments);
-    await db.delete(blogLikes);
-    await db.delete(blogTags);
-    await db.delete(readingList);
-    await db.delete(follows);
-    await db.delete(blogs);
-    await db.delete(tags);
-    await db.delete(users);
-
+    await db.execute(sql`
+      TRUNCATE TABLE
+        comments,
+        blog_likes,
+        blog_tags,
+        reading_list,
+        follows,
+        blogs,
+        tags,
+        users
+      RESTART IDENTITY CASCADE
+    `);
     return new NextResponse(null, { status: 204 });
   } catch (error) {
     console.error("Failed to reset database:", error);

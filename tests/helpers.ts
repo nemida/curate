@@ -60,10 +60,9 @@ export const createBlog = async (
   await page.getByLabel("Title", { exact: true }).fill(title)
   await page.getByLabel("Author", { exact: true }).fill(author)
   if (url) {
-    await page.getByLabel("URL", { exact: true }).fill(url)
+    await page.getByLabel("URL", { exact: false }).fill(url)
   }
   if (content) {
-    // Type into the CodeMirror editor inside the MD editor
     const editorTextarea = page.locator('.w-md-editor-text-input')
     await editorTextarea.fill(content)
   }
