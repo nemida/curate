@@ -36,7 +36,7 @@ export default function NavBar() {
               feed
             </Link>
             <Link href="/blogs/new" className={cn(buttonVariants({ size: "sm" }))}>
-              + New
+              + new
             </Link>
             <Button variant="ghost" size="sm" onClick={() => signOut()}>
               logout
