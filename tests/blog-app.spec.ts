@@ -150,12 +150,14 @@ test.describe("Blogs", () => {
   test("owner can delete a blog", async ({ page }) => {
     await loginUser(page, "testuser", "testpass123")
     await createBlog(page, "Delete Me", "Test Author")
+    await createBlog(page, "Keep Me", "Test Author")
     await page.goto("/blogs")
     await page.getByRole("link", { name: "Delete Me" }).click()
     await page.waitForURL(/\/blogs\/\d+/)
     await page.getByTestId("delete-blog-button").click()
     await page.waitForURL("/blogs", { timeout: 10000 })
     await expect(page.getByTestId("blogs-list")).not.toContainText("Delete Me")
+    await expect(page.getByTestId("blogs-list")).toContainText("Keep Me")
   })
 })
 
