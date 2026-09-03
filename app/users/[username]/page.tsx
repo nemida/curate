@@ -8,6 +8,27 @@ import { Card, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import type { Metadata } from "next";
+
+export async function generateMetadata(
+  { params }: { params: Promise<{ username: string }> }
+): Promise<Metadata> {
+  const { username } = await params;
+  const user = await getUserByUsername(username);
+
+  if (!user) return { title: "User not found" };
+
+  return {
+    title: `${user.name} (@${user.username})`,
+    description: `${user.name}'s profile on curate. ${user.blogs.length} blog${user.blogs.length === 1 ? "" : "s"} published.`,
+    openGraph: {
+      title: `${user.name} (@${user.username})`,
+      description: `${user.name}'s profile on curate.`,
+      type: "profile",
+      username: user.username,
+    },
+  };
+}
 
 const UserPage = async ({ params }: { params: Promise<{ username: string }> }) => {
   const { username } = await params;

@@ -12,6 +12,31 @@ import ReactMarkdown from "react-markdown";
 import rehypeSanitize from "rehype-sanitize";
 import CommentsSection from "./CommentsSection";
 import LikeButton from "./LikeButton";
+import type { Metadata } from "next";
+
+export async function generateMetadata(
+  { params }: { params: Promise<{ id: string }> }
+): Promise<Metadata> {
+  const { id } = await params;
+  const blog = await getBlogById(Number(id));
+
+  if (!blog) return { title: "Blog not found" };
+
+  const description = blog.content
+    ? blog.content.replace(/[#*`>_~\[\]]/g, "").slice(0, 160)
+    : `A blog post by ${blog.author} on curate.`;
+
+  return {
+    title: blog.title,
+    description,
+    openGraph: {
+      title: blog.title,
+      description,
+      type: "article",
+      authors: [blog.author],
+    },
+  };
+}
 
 const BlogPage = async ({ params }: { params: Promise<{ id: string }> }) => {
   const { id } = await params;

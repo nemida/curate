@@ -3,6 +3,12 @@ import { getCurrentUser } from "@/app/services/session";
 import { getFeedBlogs } from "@/app/services/follows";
 import BlogsListClient from "@/app/blogs/BlogsListClient";
 import Link from "next/link";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Your Feed",
+  description: "Blog posts from people you follow on curate.",
+};
 
 const FeedPage = async () => {
   const currentUser = await getCurrentUser();

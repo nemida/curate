@@ -5,6 +5,21 @@ import { NotificationProvider } from "./components/NotificationContext";
 import Notification from "./components/Notification";
 import { Geist } from "next/font/google";
 import { cn } from "@/lib/utils";
+import type { Metadata } from "next";
+
+const geist = Geist({subsets:['latin'],variable:'--font-sans'});
+
+export const metadata: Metadata = {
+  title: {
+    default: "curate.",
+    template: "%s | curate.",
+  },
+  description: "Save, share, and discover blog posts and articles. Like the ones you love. Find new ones.",
+  openGraph: {
+    siteName: "curate.",
+    type: "website",
+  },
+};
 
 const geist = Geist({subsets:['latin'],variable:'--font-sans'});
 

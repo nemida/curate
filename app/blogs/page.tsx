@@ -4,6 +4,12 @@ import BlogsListClient from "./BlogsListClient";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Blogs",
+  description: "Browse and discover blog posts shared by the curate. community.",
+};
 
 type BlogsPageProps = {
   searchParams: Promise<{ filter?: string; tag?: string; page?: string }>;
