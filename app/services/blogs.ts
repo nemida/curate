@@ -1,10 +1,11 @@
 import { db } from "@/db";
 import { blogs, blogLikes, blogTags, tags } from "@/db/schema";
-import { eq, ilike, and, count, inArray } from "drizzle-orm";
+import { eq, ilike, and, count, sql } from "drizzle-orm";
 import { getCurrentUser } from "./session";
 
-export const getBlogs = async (filter?: string, tag?: string) => {
- 
+const PAGE_SIZE = 10;
+
+export const getBlogs = async (filter?: string, tag?: string, page = 1) => {
   let tagBlogIds: number[] | undefined;
   if (tag) {
     const rows = await db
@@ -13,22 +14,45 @@ export const getBlogs = async (filter?: string, tag?: string) => {
       .innerJoin(tags, eq(tags.id, blogTags.tagId))
       .where(eq(tags.name, tag.toLowerCase()));
     tagBlogIds = rows.map((r) => r.blogId);
-
-    if (tagBlogIds.length === 0) return [];
+    if (tagBlogIds.length === 0) return { blogs: [], total: 0, pageSize: PAGE_SIZE };
   }
 
-  return db.query.blogs.findMany({
-    where: (b, { and: qAnd, ilike: qIlike, inArray: qInArray }) => {
+  const offset = (page - 1) * PAGE_SIZE;
+
+  const [{ total }] = await db
+    .select({ total: count() })
+    .from(blogs)
+    .where((b) => {
+      const conditions = [];
+      if (filter) conditions.push(ilike(b.title, `%${filter}%`));
+      if (tagBlogIds) conditions.push(sql`${b.id} = ANY(ARRAY[${sql.join(tagBlogIds.map(id => sql`${id}`), sql`, `)}]::int[])`);
+      return conditions.length > 0 ? and(...conditions) : undefined;
+    });
+
+  const likeCountSq = db
+    .select({ blogId: blogLikes.blogId, likeCount: count().as("like_count") })
+    .from(blogLikes)
+    .groupBy(blogLikes.blogId)
+    .as("like_counts");
+
+  const rows = await db.query.blogs.findMany({
+    where: (b, { and: qAnd, ilike: qIlike }) => {
       const conditions = [];
       if (filter) conditions.push(qIlike(b.title, `%${filter}%`));
-      if (tagBlogIds) conditions.push(qInArray(b.id, tagBlogIds));
+      if (tagBlogIds) conditions.push(sql`${b.id} = ANY(ARRAY[${sql.join(tagBlogIds.map(id => sql`${id}`), sql`, `)}]::int[])`);
       return conditions.length > 0 ? qAnd(...conditions) : undefined;
     },
     with: {
       blogLikes: true,
       blogTags: { with: { tag: true } },
     },
+    limit: PAGE_SIZE,
+    offset,
   });
+
+  const sorted = [...rows].sort((a, b) => b.blogLikes.length - a.blogLikes.length);
+
+  return { blogs: sorted, total, pageSize: PAGE_SIZE };
 }
 
 export const getBlogById = async (id: number) => {
